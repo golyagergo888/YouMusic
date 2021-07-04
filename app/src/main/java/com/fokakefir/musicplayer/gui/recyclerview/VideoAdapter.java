@@ -22,14 +22,16 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoViewHol
 
     private Context context;
     private List<VideoYT> videos;
+    private OnVideoListener onVideoListener;
 
     // endregion
 
     // region 2. Constructor
 
-    public VideoAdapter(Context context, List<VideoYT> videos) {
+    public VideoAdapter(Context context, List<VideoYT> videos, OnVideoListener onVideoListener) {
         this.context = context;
         this.videos = videos;
+        this.onVideoListener = onVideoListener;
     }
 
 
@@ -41,7 +43,7 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoViewHol
     @Override
     public VideoViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.example_video, parent, false);
-        VideoViewHolder viewHolder = new VideoViewHolder(v);
+        VideoViewHolder viewHolder = new VideoViewHolder(v, this.onVideoListener);
 
         return viewHolder;
     }
@@ -51,7 +53,7 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoViewHol
         VideoYT currentVideo = this.videos.get(position);
 
         holder.txtTitle.setText(currentVideo.getSnippet().getTitle());
-        holder.txtDescription.setText(currentVideo.getSnippet().getDescription());
+        holder.txtChannel.setText(currentVideo.getSnippet().getChannelTitle());
 
         String imageUrl = currentVideo.getSnippet().getThumbnails().getMedium().getUrl();
         Picasso.get()
@@ -60,6 +62,8 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoViewHol
                 .fit()
                 .centerCrop()
                 .into(holder.imgVideo);
+
+        holder.videoId = currentVideo.getId().getVideoId();
 
     }
 
@@ -72,24 +76,49 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoViewHol
 
     // region 4. Holder class
 
-    public static class VideoViewHolder extends RecyclerView.ViewHolder {
+    public static class VideoViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         public ImageView imgVideo;
         public TextView txtTitle;
-        public TextView txtDescription;
+        public TextView txtChannel;
 
-        public VideoViewHolder(@NonNull View itemView) {
+        public String videoId;
+
+        private View itemView;
+
+        private OnVideoListener onVideoListener;
+
+        public VideoViewHolder(@NonNull View itemView, OnVideoListener onVideoListener) {
             super(itemView);
 
             this.imgVideo = itemView.findViewById(R.id.img_video);
             this.txtTitle = itemView.findViewById(R.id.txt_video_title);
-            this.txtDescription = itemView.findViewById(R.id.txt_video_description);
+            this.txtChannel = itemView.findViewById(R.id.txt_video_channel);
+
+            this.videoId = null;
+
+            this.itemView = itemView;
+            itemView.setOnClickListener(this);
+
+            this.onVideoListener = onVideoListener;
+        }
+
+        @Override
+        public void onClick(View view) {
+            if (view == this.itemView) {
+                if (this.videoId != null)
+                    this.onVideoListener.onVideoClick(this.videoId);
+            }
         }
     }
 
     // endregion
 
     // region 5. Listener interface
+
+    public interface OnVideoListener {
+        void onVideoClick(String videoId);
+    }
 
     // endregion
 

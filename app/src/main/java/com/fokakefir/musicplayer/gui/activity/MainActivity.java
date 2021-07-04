@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         this.bottomNav.setOnNavigationItemSelectedListener(this);
 
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, this.searchFragment).commit();
+        getSupportActionBar().setTitle("YouTube");
     }
 
     // endregion
@@ -51,14 +52,15 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         if (item.isChecked()) {
             return true;
         } else {
-            if (item.getItemId() == R.id.nav_search) {
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, this.searchFragment).commit();
-                getSupportActionBar().setTitle("YouTube");
-                return true;
-            } else if (item.getItemId() == R.id.nav_albums) {
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, this.albumsFragment).commit();
-                getSupportActionBar().setTitle("Albums");
-                return true;
+            switch (item.getItemId()) {
+                case R.id.nav_search:
+                    getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, this.searchFragment).commit();
+                    getSupportActionBar().setTitle("YouTube");
+                    return true;
+                case R.id.nav_albums:
+                    getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, this.albumsFragment).commit();
+                    getSupportActionBar().setTitle("Albums");
+                    return true;
             }
         }
         return false;

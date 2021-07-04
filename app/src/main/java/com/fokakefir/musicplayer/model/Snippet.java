@@ -17,6 +17,10 @@ public class Snippet {
     @Expose
     private String description;
 
+    @SerializedName("channelTitle")
+    @Expose
+    private String channelTitle;
+
     @SerializedName("thumbnails")
     @Expose
     private ThumbnailsYT thumbnails;
@@ -53,6 +57,14 @@ public class Snippet {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getChannelTitle() {
+        return channelTitle;
+    }
+
+    public void setChannelTitle(String channelTitle) {
+        this.channelTitle = channelTitle;
     }
 
     public ThumbnailsYT getThumbnails() {
