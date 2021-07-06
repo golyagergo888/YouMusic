@@ -15,6 +15,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.fokakefir.musicplayer.R;
+import com.fokakefir.musicplayer.gui.activity.MainActivity;
 import com.fokakefir.musicplayer.gui.recyclerview.VideoAdapter;
 import com.fokakefir.musicplayer.model.VideoYT;
 import com.fokakefir.musicplayer.model.YoutubeVideos;
@@ -40,6 +41,8 @@ public class SearchFragment extends Fragment implements Callback<YoutubeVideos>,
 
     private View view;
 
+    private MainActivity activity;
+
     private EditText txtSearch;
     private Button btnSearch;
 
@@ -53,8 +56,8 @@ public class SearchFragment extends Fragment implements Callback<YoutubeVideos>,
 
     // region 2. Lifecycle and Constructor
 
-    public SearchFragment() {
-
+    public SearchFragment(MainActivity activity) {
+        this.activity = activity;
     }
 
     @Override
@@ -125,10 +128,12 @@ public class SearchFragment extends Fragment implements Callback<YoutubeVideos>,
     // region 5. Video listener
 
     @Override
-    public void onVideoClick(String videoId) {
-        String youtubeLink = "https://www.youtube.com/watch?v=" + videoId;
+    public void onVideoDownloadClick(String videoId) {
+        String url = "https://www.youtube.com/watch?v=" + videoId;
 
-        Toast.makeText(getContext(), youtubeLink, Toast.LENGTH_SHORT).show();
+        this.activity.downloadMusic(url);
+
+        Toast.makeText(getContext(), url, Toast.LENGTH_SHORT).show();
     }
 
     // endregion

@@ -1,9 +1,11 @@
 package com.fokakefir.musicplayer.gui.recyclerview;
 
 import android.content.Context;
+import android.media.Image;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -63,6 +65,9 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoViewHol
                 .centerCrop()
                 .into(holder.imgVideo);
 
+        holder.btnDownload.setVisibility(View.GONE);
+        holder.imgVideo.setAlpha((float) 1.0);
+
         holder.videoId = currentVideo.getId().getVideoId();
 
     }
@@ -81,8 +86,10 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoViewHol
         public ImageView imgVideo;
         public TextView txtTitle;
         public TextView txtChannel;
+        public ImageButton btnDownload;
 
         public String videoId;
+        public boolean selected;
 
         private View itemView;
 
@@ -91,14 +98,19 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoViewHol
         public VideoViewHolder(@NonNull View itemView, OnVideoListener onVideoListener) {
             super(itemView);
 
+            this.selected = false;
+
             this.imgVideo = itemView.findViewById(R.id.img_video);
             this.txtTitle = itemView.findViewById(R.id.txt_video_title);
             this.txtChannel = itemView.findViewById(R.id.txt_video_channel);
+            this.btnDownload = itemView.findViewById(R.id.btn_download);
 
             this.videoId = null;
 
             this.itemView = itemView;
             itemView.setOnClickListener(this);
+
+            this.btnDownload.setOnClickListener(this);
 
             this.onVideoListener = onVideoListener;
         }
@@ -106,8 +118,19 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoViewHol
         @Override
         public void onClick(View view) {
             if (view == this.itemView) {
+                if (!this.selected) {
+
+                    this.imgVideo.animate().alpha((float) 0.5).setDuration(100).start();
+                    this.btnDownload.setVisibility(View.VISIBLE);
+                    this.selected = true;
+                } else {
+                    this.imgVideo.animate().alpha((float) 1.0).setDuration(100).start();
+                    this.btnDownload.setVisibility(View.GONE);
+                    this.selected = false;
+                }
+            } else if (view.getId() == R.id.btn_download) {
                 if (this.videoId != null)
-                    this.onVideoListener.onVideoClick(this.videoId);
+                    this.onVideoListener.onVideoDownloadClick(this.videoId);
             }
         }
     }
@@ -117,7 +140,7 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoViewHol
     // region 5. Listener interface
 
     public interface OnVideoListener {
-        void onVideoClick(String videoId);
+        void onVideoDownloadClick(String videoId);
     }
 
     // endregion
