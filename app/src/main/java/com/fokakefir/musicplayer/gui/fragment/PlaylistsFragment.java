@@ -10,7 +10,7 @@ import androidx.fragment.app.Fragment;
 import com.fokakefir.musicplayer.R;
 
 
-public class AlbumsFragment extends Fragment {
+public class PlaylistsFragment extends Fragment {
 
     // region 0. Constants
 
@@ -24,13 +24,13 @@ public class AlbumsFragment extends Fragment {
 
     // region 2. Lifecycle and Constructor
 
-    public AlbumsFragment() {
+    public PlaylistsFragment() {
 
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        this.view = inflater.inflate(R.layout.fragment_albums, container, false);
+        this.view = inflater.inflate(R.layout.fragment_playlists, container, false);
 
 
         return this.view;

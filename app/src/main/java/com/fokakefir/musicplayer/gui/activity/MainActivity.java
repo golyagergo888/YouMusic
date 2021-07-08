@@ -6,12 +6,10 @@ import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.pm.PackageManager;
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -22,35 +20,34 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.fokakefir.musicplayer.R;
-import com.fokakefir.musicplayer.gui.fragment.AlbumsFragment;
+import com.fokakefir.musicplayer.background.RequestDownloadMusicStream;
+import com.fokakefir.musicplayer.gui.fragment.PlaylistsFragment;
 import com.fokakefir.musicplayer.gui.fragment.SearchFragment;
+import com.fokakefir.musicplayer.background.RequestDownloadMusicStreamResponse;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
 
 import at.huber.youtubeExtractor.YouTubeUriExtractor;
 import at.huber.youtubeExtractor.YtFile;
 
-public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, SlidingUpPanelLayout.PanelSlideListener, View.OnClickListener, MediaPlayer.OnCompletionListener {
+public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, SlidingUpPanelLayout.PanelSlideListener, View.OnClickListener, MediaPlayer.OnCompletionListener, RequestDownloadMusicStreamResponse {
 
     // region 0. Constants
 
     private static final int READ_STORAGE_PERMISSION_REQUEST_CODE = 1;
-    private static final int YOUTUBE_ITAG_480 = 18;
+    private static final int YOUTUBE_ITAG_VIDEO_480P = 18;
+    private static final int YOUTUBE_ITAG_AUDIO_50K = 249;
+    private static final int YOUTUBE_ITAG_AUDIO_160K = 251;
+    private static final int YOUTUBE_ITAG_AUDIO_128K = 140;
 
     // endregion
 
     // region 1. Decl and Init
 
     private SearchFragment searchFragment;
-    private AlbumsFragment albumsFragment;
+    private PlaylistsFragment playlistsFragment;
 
     private BottomNavigationView bottomNav;
     private SlidingUpPanelLayout layout;
@@ -69,14 +66,15 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         setContentView(R.layout.activity_main);
 
         this.searchFragment = new SearchFragment(this);
-        this.albumsFragment = new AlbumsFragment();
+        this.playlistsFragment = new PlaylistsFragment();
 
         this.bottomNav = findViewById(R.id.bottom_navigation);
         this.layout = findViewById(R.id.sliding_up_panel);
         this.btnPlay = findViewById(R.id.btn_play_music);
 
         this.bottomNav.setOnNavigationItemSelectedListener(this);
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, this.searchFragment).commit();
+        getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, this.searchFragment).commit();
+        getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, this.playlistsFragment).hide(this.playlistsFragment).commit();
         getSupportActionBar().setTitle("YouTube");
 
         this.btnPlay.setImageResource(R.drawable.ic_baseline_play_music);
@@ -111,12 +109,14 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         } else {
             switch (item.getItemId()) {
                 case R.id.nav_search:
-                    getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, this.searchFragment).commit();
+                    getSupportFragmentManager().beginTransaction().hide(this.playlistsFragment).commit();
+                    getSupportFragmentManager().beginTransaction().show(this.searchFragment).commit();
                     getSupportActionBar().setTitle("YouTube");
                     return true;
-                case R.id.nav_albums:
-                    getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, this.albumsFragment).commit();
-                    getSupportActionBar().setTitle("Albums");
+                case R.id.nav_playlists:
+                    getSupportFragmentManager().beginTransaction().hide(this.searchFragment).commit();
+                    getSupportFragmentManager().beginTransaction().show(this.playlistsFragment).commit();
+                    getSupportActionBar().setTitle("Playlists");
                     return true;
             }
         }
@@ -145,6 +145,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     // region 5. MediaPlayer
 
     public void playMusicUri(Uri uri) {
+        //Uri uri = Uri.parse(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)+"/YoutubeMusics/" + name);
         if (this.mediaPlayer == null) {
             this.mediaPlayer = new MediaPlayer();
             this.mediaPlayer.setAudioAttributes(
@@ -153,6 +154,12 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                             .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                             .build()
             );
+            this.mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mediaPlayer) {
+                    stopMediaPlayer();
+                }
+            });
         }
 
         try {
@@ -220,8 +227,9 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             public void onUrisAvailable(String videoId, String videoTitle, SparseArray<YtFile> ytFiles) {
                 if (ytFiles != null) {
                     try {
-                        String downloadUrl = ytFiles.get(YOUTUBE_ITAG_480).getUrl();
-                        new RequestDownloadMusicStream().execute(downloadUrl, videoTitle);
+                        String downloadUrl = ytFiles.get(YOUTUBE_ITAG_AUDIO_128K).getUrl();
+                        RequestDownloadMusicStream requestDownloadMusicStream = new RequestDownloadMusicStream(MainActivity.this, MainActivity.this);
+                        requestDownloadMusicStream.execute(downloadUrl, videoTitle);
                     } catch (Exception e) {
                         Toast.makeText(MainActivity.this, String.valueOf(e), Toast.LENGTH_SHORT).show();
                     }
@@ -230,98 +238,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         };
 
         youTubeUriExtractor.execute(url);
-    }
-
-    private class RequestDownloadMusicStream extends AsyncTask<String, String, String> {
-
-        private ProgressDialog dialog;
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            this.dialog = new ProgressDialog(MainActivity.this);
-            this.dialog.setMessage("Downloading file. Please wait...");
-            this.dialog.setIndeterminate(false);
-            this.dialog.setMax(100);
-            this.dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-            this.dialog.setCancelable(false);
-            this.dialog.show();
-        }
-
-        @Override
-        protected String doInBackground(String... params) {
-            InputStream inputStream = null;
-            URL url = null;
-            int len1 = 0;
-            int tempProgress = 0;
-            int progress = 0;
-            try {
-                url = new URL(params[0]);
-                inputStream = url.openStream();
-                URLConnection urlConnection = (URLConnection) url.openConnection();
-                urlConnection.connect();
-                int size = urlConnection.getContentLength();
-
-                if (urlConnection != null) {
-                    String fileName = params[1] + ".mp3";
-                    String storagePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)+"/YoutubeMusics";
-                    File f = new File(storagePath);
-                    if (!f.exists()) {
-                        f.mkdir();
-                    }
-
-                    FileOutputStream fileOutputStream = new FileOutputStream(f+"/"+fileName);
-                    byte[] buffer = new byte[1024];
-                    int total = 0;
-                    if (inputStream != null) {
-                        while ((len1 = inputStream.read(buffer)) != -1) {
-                            total += len1;
-                            // publishing the progress....
-                            // After this onProgressUpdate will be called
-                            progress = (int) ((total * 100) / size);
-                            if(progress >= 0) {
-                                tempProgress = progress;
-                                publishProgress("" + progress);
-                            }else
-                                publishProgress("" + tempProgress+1);
-
-                            fileOutputStream.write(buffer, 0, len1);
-                        }
-                    }
-
-                    if (fileOutputStream != null) {
-                        publishProgress("" + 100);
-                        fileOutputStream.close();
-                    }
-                }
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                if (inputStream != null) {
-                    try {
-                        inputStream.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-            return null;
-        }
-
-        @Override
-        protected void onProgressUpdate(String... values) {
-            super.onProgressUpdate(values);
-            this.dialog.setProgress(Integer.parseInt(values[0]));
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            if (this.dialog.isShowing())
-                this.dialog.dismiss();
-        }
     }
 
     public void requestPermissionForReadExternalStorage() throws Exception {
@@ -342,6 +258,15 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             return (result == PackageManager.PERMISSION_GRANTED && result2 == PackageManager.PERMISSION_GRANTED);
         }
         return false;
+    }
+
+    // endregion
+
+    // region 8. Database
+
+    @Override
+    public void onMusicDownloaded() {
+        Toast.makeText(this, "Downloaded", Toast.LENGTH_SHORT).show();
     }
 
     // endregion

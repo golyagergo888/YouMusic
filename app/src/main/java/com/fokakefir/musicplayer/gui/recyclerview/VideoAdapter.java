@@ -22,7 +22,6 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoViewHol
 
     // region 1. Decl and Init
 
-    private Context context;
     private List<VideoYT> videos;
     private OnVideoListener onVideoListener;
 
@@ -30,8 +29,7 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoViewHol
 
     // region 2. Constructor
 
-    public VideoAdapter(Context context, List<VideoYT> videos, OnVideoListener onVideoListener) {
-        this.context = context;
+    public VideoAdapter(List<VideoYT> videos, OnVideoListener onVideoListener) {
         this.videos = videos;
         this.onVideoListener = onVideoListener;
     }

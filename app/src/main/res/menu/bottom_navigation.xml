@@ -6,7 +6,7 @@
         android:title="Search" />
 
     <item
-        android:id="@+id/nav_albums"
+        android:id="@+id/nav_playlists"
         android:icon="@drawable/ic_baseline_album_24"
-        android:title="Albums" />
+        android:title="Playlists" />
 </menu>

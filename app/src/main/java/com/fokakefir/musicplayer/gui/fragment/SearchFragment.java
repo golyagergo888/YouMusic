@@ -72,10 +72,9 @@ public class SearchFragment extends Fragment implements Callback<YoutubeVideos>,
 
         this.recyclerView = this.view.findViewById(R.id.recycler_view_videos);
         this.layoutManager = new LinearLayoutManager(getContext());
-        this.adapter = new VideoAdapter(getContext(), this.videos, this);
+        this.adapter = new VideoAdapter(this.videos, this);
         this.recyclerView.setLayoutManager(this.layoutManager);
         this.recyclerView.setAdapter(this.adapter);
-
 
         return this.view;
     }
@@ -97,7 +96,7 @@ public class SearchFragment extends Fragment implements Callback<YoutubeVideos>,
                 Call<YoutubeVideos> data = YoutubeAPI.getRequest().getYT(url);
                 data.enqueue(this);
             } else {
-                Toast.makeText(getContext(), "Input can's be empty", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Input can't be empty", Toast.LENGTH_SHORT).show();
             }
         }
     }
