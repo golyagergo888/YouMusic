@@ -12,7 +12,6 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.SparseArray;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,6 +20,7 @@ import android.widget.Toast;
 
 import com.fokakefir.musicplayer.R;
 import com.fokakefir.musicplayer.background.RequestDownloadMusicStream;
+import com.fokakefir.musicplayer.background.RequestDownloadThumbnailStream;
 import com.fokakefir.musicplayer.gui.fragment.PlaylistsFragment;
 import com.fokakefir.musicplayer.gui.fragment.SearchFragment;
 import com.fokakefir.musicplayer.background.RequestDownloadMusicStreamResponse;
@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         setContentView(R.layout.activity_main);
 
         this.searchFragment = new SearchFragment(this);
-        this.playlistsFragment = new PlaylistsFragment();
+        this.playlistsFragment = new PlaylistsFragment(this);
 
         this.bottomNav = findViewById(R.id.bottom_navigation);
         this.layout = findViewById(R.id.sliding_up_panel);
@@ -219,7 +219,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     // endregion
 
-    // region 7. Download music
+    // region 7. Download music and thumbnail
 
     public void downloadMusic(String url) {
         YouTubeUriExtractor youTubeUriExtractor = new YouTubeUriExtractor(this) {
@@ -238,6 +238,10 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         };
 
         youTubeUriExtractor.execute(url);
+    }
+
+    public void downloadThumbnail(String url, String name) {
+        new RequestDownloadThumbnailStream(this).execute(url, name);
     }
 
     public void requestPermissionForReadExternalStorage() throws Exception {

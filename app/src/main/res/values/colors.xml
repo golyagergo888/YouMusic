@@ -11,4 +11,14 @@
     <color name="primaryRed">#F44336</color>
     <color name="primaryDarkRed">#D32F2F</color>
     <color name="accentBlue">#03A9F4</color>
+
+    <color name="playlistRed">#901a1d</color>
+    <color name="playlistOrange">#d87d2b</color>
+    <color name="playlistYellow">#f0ec39</color>
+    <color name="playlistGreen">#31b54d</color>
+    <color name="playlistBlue">#126db1</color>
+    <color name="playlistIndigo">#4b168d</color>
+    <color name="playlistViolet">#ed207b</color>
+    <color name="playlistBlack">#FF000000</color>
+
 </resources>
