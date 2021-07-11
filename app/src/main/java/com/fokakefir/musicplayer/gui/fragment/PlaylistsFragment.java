@@ -49,13 +49,13 @@ public class PlaylistsFragment extends Fragment implements PlaylistAdapter.OnPla
         this.view = inflater.inflate(R.layout.fragment_playlists, container, false);
 
         this.playlistList = new ArrayList<>();
-        this.playlistList.add(new Playlist(0, "Hardbass", 10, R.color.playlistIndigo));
-        this.playlistList.add(new Playlist(0, "Hardbass", 10, R.color.playlistBlack));
-        this.playlistList.add(new Playlist(0, "Hardbass", 10, R.color.playlistGreen));
-        this.playlistList.add(new Playlist(0, "Hardbass", 10, R.color.playlistRed));
-        this.playlistList.add(new Playlist(0, "Hardbass", 10, R.color.playlistViolet));
-        this.playlistList.add(new Playlist(0, "Hardbass", 10, R.color.playlistYellow));
-        this.playlistList.add(new Playlist(0, "Hardbass", 10, R.color.playlistBlue));
+        this.playlistList.add(new Playlist(0, "Hardbass", 10, "indigo"));
+        this.playlistList.add(new Playlist(0, "Mulatos", 10, "white"));
+        this.playlistList.add(new Playlist(0, "Marci kedvenc zenei", 66, "green"));
+        this.playlistList.add(new Playlist(0, "Szar az elet", 10, "red"));
+        this.playlistList.add(new Playlist(0, "meg tobb Hardbass", 10, "violet"));
+        this.playlistList.add(new Playlist(0, "itt vagy?", 10, "yellow"));
+        this.playlistList.add(new Playlist(0, "Egy ket ha kurva anyad", 10, "blue"));
 
         this.recyclerView = this.view.findViewById(R.id.recycler_view_playlists);
         this.layoutManager = new LinearLayoutManager(getContext());
@@ -68,11 +68,11 @@ public class PlaylistsFragment extends Fragment implements PlaylistAdapter.OnPla
 
     // endregion
 
-    // region 3.
+    // region 3. Playlist listener
 
     @Override
     public void onPlaylistClick(int playlistId) {
-
+        this.activity.addMusicsFragment(playlistId);
     }
 
     // endregion

@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -55,8 +56,37 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.Playli
 
         holder.playlistId = currentPlaylist.getId();
         holder.txtName.setText(currentPlaylist.getName());
-        holder.txtSongs.setText(currentPlaylist.getNumberOfMusics() + " songs");
-        holder.imgPlaylist.setColorFilter(this.context.getResources().getColor(currentPlaylist.getColor()));
+        holder.txtSongs.setText(currentPlaylist.getNumberOfMusics() + " music");
+
+        int color = R.color.playlistWhite;
+        switch (currentPlaylist.getColor()) {
+            case "red":
+                color = R.color.playlistRed;
+                break;
+            case "orange":
+                color = R.color.playlistOrange;
+                break;
+            case "yellow":
+                color = R.color.playlistYellow;
+                break;
+            case "green":
+                color = R.color.playlistGreen;
+                break;
+            case "blue":
+                color = R.color.playlistBlue;
+                break;
+            case "indigo":
+                color = R.color.playlistIndigo;
+                break;
+            case "violet":
+                color = R.color.playlistViolet;
+                break;
+            case "white":
+                color = R.color.playlistWhite;
+                break;
+        }
+        holder.imgPlaylist.setBackgroundColor(this.context.getResources().getColor(color));
+        //holder.imgPlaylist.setColorFilter(this.context.getResources().getColor(color));
     }
 
     @Override

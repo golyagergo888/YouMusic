@@ -7,12 +7,12 @@ public class Playlist {
     private int id;
     private String name;
     private int numberOfMusics;
-    private int color;
+    private String color;
 
     public Playlist() {
     }
 
-    public Playlist(int id, String name, int numberOfMusics, int color) {
+    public Playlist(int id, String name, int numberOfMusics, String color) {
         this.id = id;
         this.name = name;
         this.numberOfMusics = numberOfMusics;
@@ -43,11 +43,11 @@ public class Playlist {
         this.numberOfMusics = numberOfMusics;
     }
 
-    public int getColor() {
+    public String getColor() {
         return color;
     }
 
-    public void setColor(int color) {
+    public void setColor(String color) {
         this.color = color;
     }
 

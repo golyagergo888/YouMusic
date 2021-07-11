@@ -4,10 +4,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/white"
-    tools:context=".gui.fragment.PlaylistsFragment">
+    tools:context=".gui.fragment.MusicsFragment">
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_view_playlists"
+        android:id="@+id/recycler_view_musics"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="4dp"

@@ -19,6 +19,6 @@
     <color name="playlistBlue">#126db1</color>
     <color name="playlistIndigo">#4b168d</color>
     <color name="playlistViolet">#ed207b</color>
-    <color name="playlistBlack">#FF000000</color>
+    <color name="playlistWhite">#FFFFFFFF</color>
 
 </resources>

@@ -21,6 +21,7 @@ import android.widget.Toast;
 import com.fokakefir.musicplayer.R;
 import com.fokakefir.musicplayer.background.RequestDownloadMusicStream;
 import com.fokakefir.musicplayer.background.RequestDownloadThumbnailStream;
+import com.fokakefir.musicplayer.gui.fragment.MusicsFragment;
 import com.fokakefir.musicplayer.gui.fragment.PlaylistsFragment;
 import com.fokakefir.musicplayer.gui.fragment.SearchFragment;
 import com.fokakefir.musicplayer.background.RequestDownloadMusicStreamResponse;
@@ -48,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     private SearchFragment searchFragment;
     private PlaylistsFragment playlistsFragment;
+    private MusicsFragment musicsFragment;
 
     private BottomNavigationView bottomNav;
     private SlidingUpPanelLayout layout;
@@ -67,6 +69,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
         this.searchFragment = new SearchFragment(this);
         this.playlistsFragment = new PlaylistsFragment(this);
+        this.musicsFragment = null;
 
         this.bottomNav = findViewById(R.id.bottom_navigation);
         this.layout = findViewById(R.id.sliding_up_panel);
@@ -98,6 +101,15 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         stopMediaPlayer();
     }
 
+    @Override
+    public void onBackPressed() {
+        if (this.musicsFragment != null && getSupportActionBar().getTitle() == "Musics") {
+            this.musicsFragment = null;
+            getSupportActionBar().setTitle("Playlists");
+            super.onBackPressed();
+        }
+    }
+
     // endregion
 
     // region 3. Fragments
@@ -111,16 +123,31 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 case R.id.nav_search:
                     getSupportFragmentManager().beginTransaction().hide(this.playlistsFragment).commit();
                     getSupportFragmentManager().beginTransaction().show(this.searchFragment).commit();
+                    if (this.musicsFragment != null) {
+                        getSupportFragmentManager().beginTransaction().hide(this.musicsFragment).commit();
+                    }
                     getSupportActionBar().setTitle("YouTube");
                     return true;
                 case R.id.nav_playlists:
                     getSupportFragmentManager().beginTransaction().hide(this.searchFragment).commit();
                     getSupportFragmentManager().beginTransaction().show(this.playlistsFragment).commit();
-                    getSupportActionBar().setTitle("Playlists");
+                    if (this.musicsFragment != null) {
+                        getSupportFragmentManager().beginTransaction().show(this.musicsFragment).commit();
+                        getSupportActionBar().setTitle("Musics");
+                    } else {
+                        getSupportActionBar().setTitle("Playlists");
+                    }
                     return true;
             }
         }
         return false;
+    }
+
+    public void addMusicsFragment(int playlistId) {
+        this.musicsFragment = new MusicsFragment(this, playlistId);
+        getSupportFragmentManager().beginTransaction()
+                .add(R.id.fragment_container, this.musicsFragment).addToBackStack(null).commit();
+        getSupportActionBar().setTitle("Musics");
     }
 
     // endregion
