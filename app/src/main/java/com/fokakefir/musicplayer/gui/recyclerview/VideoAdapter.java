@@ -1,7 +1,5 @@
 package com.fokakefir.musicplayer.gui.recyclerview;
 
-import android.content.Context;
-import android.media.Image;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,7 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.fokakefir.musicplayer.R;
-import com.fokakefir.musicplayer.model.VideoYT;
+import com.fokakefir.musicplayer.model.youtube.VideoYT;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;

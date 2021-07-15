@@ -1,6 +1,6 @@
 package com.fokakefir.musicplayer.logic.network;
 
-import com.fokakefir.musicplayer.model.YoutubeVideos;
+import com.fokakefir.musicplayer.model.youtube.YoutubeVideos;
 
 import retrofit2.Call;
 import retrofit2.Retrofit;
