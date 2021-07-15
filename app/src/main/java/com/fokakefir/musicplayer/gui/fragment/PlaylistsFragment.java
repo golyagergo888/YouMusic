@@ -1,5 +1,6 @@
 package com.fokakefir.musicplayer.gui.fragment;
 
+import android.database.Cursor;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -48,18 +49,9 @@ public class PlaylistsFragment extends Fragment implements PlaylistAdapter.OnPla
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         this.view = inflater.inflate(R.layout.fragment_playlists, container, false);
 
-        this.playlistList = new ArrayList<>();
-        this.playlistList.add(new Playlist(0, "Hardbass", 10, "indigo"));
-        this.playlistList.add(new Playlist(0, "Mulatos", 10, "white"));
-        this.playlistList.add(new Playlist(0, "Marci kedvenc zenei", 66, "green"));
-        this.playlistList.add(new Playlist(0, "Szar az elet", 10, "red"));
-        this.playlistList.add(new Playlist(0, "meg tobb Hardbass", 10, "violet"));
-        this.playlistList.add(new Playlist(0, "itt vagy?", 10, "yellow"));
-        this.playlistList.add(new Playlist(0, "Egy ket ha kurva anyad", 10, "blue"));
-
         this.recyclerView = this.view.findViewById(R.id.recycler_view_playlists);
         this.layoutManager = new LinearLayoutManager(getContext());
-        this.adapter = new PlaylistAdapter(this.playlistList, this, getContext());
+        this.adapter = new PlaylistAdapter(this.activity.getAllPlaylists(), this, getContext());
         this.recyclerView.setLayoutManager(this.layoutManager);
         this.recyclerView.setAdapter(this.adapter);
 
@@ -73,6 +65,14 @@ public class PlaylistsFragment extends Fragment implements PlaylistAdapter.OnPla
     @Override
     public void onPlaylistClick(int playlistId) {
         this.activity.addMusicsFragment(playlistId);
+    }
+
+    // endregion
+
+    // region 4. Database
+
+    public void swapCursor(Cursor cursor) {
+        this.adapter.swapCursor(cursor);
     }
 
     // endregion

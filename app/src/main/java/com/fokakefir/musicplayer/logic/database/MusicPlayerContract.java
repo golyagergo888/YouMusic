@@ -19,6 +19,7 @@ public class MusicPlayerContract {
         public static final String TABLE_NAME = "playlists";
         public static final String COLUMN_NAME = "name";
         public static final String COLUMN_COLOR = "color";
+        public static final String COLUMN_MUSICS = "musics";
         public static final String COLUMN_TIMESTAMP = "timestamp";
     }
 

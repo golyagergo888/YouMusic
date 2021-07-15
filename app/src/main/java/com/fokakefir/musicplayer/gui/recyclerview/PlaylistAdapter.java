@@ -2,6 +2,7 @@ package com.fokakefir.musicplayer.gui.recyclerview;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.database.Cursor;
 import android.graphics.ColorFilter;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.fokakefir.musicplayer.R;
+import com.fokakefir.musicplayer.logic.database.MusicPlayerContract;
 import com.fokakefir.musicplayer.model.Playlist;
 
 import java.util.List;
@@ -22,7 +24,7 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.Playli
 
     // region 1. Decl and Init
 
-    private List<Playlist> playlists;
+    private Cursor cursor;
     private OnPlaylistListener onPlaylistListener;
     private Context context;
 
@@ -30,8 +32,8 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.Playli
 
     // region 2. Constructor
 
-    public PlaylistAdapter(List<Playlist> playlists, OnPlaylistListener onPlaylistListener, Context context) {
-        this.playlists = playlists;
+    public PlaylistAdapter(Cursor cursor, OnPlaylistListener onPlaylistListener, Context context) {
+        this.cursor = cursor;
         this.onPlaylistListener = onPlaylistListener;
         this.context = context;
     }
@@ -52,14 +54,15 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.Playli
     @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(@NonNull PlaylistViewHolder holder, int position) {
-        Playlist currentPlaylist = this.playlists.get(position);
+        if (!this.cursor.moveToPosition(position))
+            return;
 
-        holder.playlistId = currentPlaylist.getId();
-        holder.txtName.setText(currentPlaylist.getName());
-        holder.txtSongs.setText(currentPlaylist.getNumberOfMusics() + " music");
+        holder.playlistId = this.cursor.getInt(this.cursor.getColumnIndex(MusicPlayerContract.PlaylistEntry._ID));
+        holder.txtName.setText(this.cursor.getString(this.cursor.getColumnIndex(MusicPlayerContract.PlaylistEntry.COLUMN_NAME)));
+        holder.txtSongs.setText(this.cursor.getString(this.cursor.getColumnIndex(MusicPlayerContract.PlaylistEntry.COLUMN_MUSICS)) + " music");
 
         int color = R.color.playlistWhite;
-        switch (currentPlaylist.getColor()) {
+        switch (this.cursor.getString(this.cursor.getColumnIndex(MusicPlayerContract.PlaylistEntry.COLUMN_COLOR))) {
             case Playlist.COLOR_RED:
                 color = R.color.playlistRed;
                 break;
@@ -91,7 +94,18 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.Playli
 
     @Override
     public int getItemCount() {
-        return this.playlists.size();
+        return this.cursor.getCount();
+    }
+
+    public void swapCursor(Cursor newCursor) {
+        if (this.cursor != null) {
+            this.cursor.close();
+        }
+        this.cursor = newCursor;
+
+        if (newCursor != null) {
+            notifyDataSetChanged();
+        }
     }
 
     // endregion

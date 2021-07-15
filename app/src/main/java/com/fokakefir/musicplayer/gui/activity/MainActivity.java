@@ -8,6 +8,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
@@ -306,18 +307,47 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     @Override
     public void onMusicDownloaded(String videoId, String title, String artist, int length) {
-        ContentValues cv = new ContentValues();
+        ContentValues cvMusic = new ContentValues();
 
-        cv.put(MusicEntry.COLUMN_VIDEO_ID, videoId);
-        cv.put(MusicEntry.COLUMN_TITLE, title);
-        cv.put(MusicEntry.COLUMN_ARTIST, artist);
-        cv.put(MusicEntry.COLUMN_LENGTH, length);
+        cvMusic.put(MusicEntry.COLUMN_VIDEO_ID, videoId);
+        cvMusic.put(MusicEntry.COLUMN_TITLE, title);
+        cvMusic.put(MusicEntry.COLUMN_ARTIST, artist);
+        cvMusic.put(MusicEntry.COLUMN_LENGTH, length);
 
-        this.database.insert(MusicEntry.TABLE_NAME, null, cv);
+        long id = this.database.insert(MusicEntry.TABLE_NAME, null, cvMusic);
+
+        ContentValues cvConnect = new ContentValues();
+        cvConnect.put(ConnectEntry.COLUMN_PLAYLIST_ID, 1);
+        cvConnect.put(ConnectEntry.COLUMN_MUSIC_ID, id);
+
+        this.database.insert(ConnectEntry.TABLE_NAME, null, cvConnect);
+
+        this.playlistsFragment.swapCursor(getAllPlaylists());
 
         Toast.makeText(this, "Downloaded", Toast.LENGTH_SHORT).show();
     }
 
+    public Cursor getAllPlaylists() {
+        return this.database.rawQuery(
+                "SELECT " + PlaylistEntry._ID + ", " + PlaylistEntry.COLUMN_NAME + ", " + PlaylistEntry.COLUMN_COLOR + ", " +
+                        "(SELECT COUNT(" + ConnectEntry.COLUMN_MUSIC_ID + ") FROM " + ConnectEntry.TABLE_NAME + " WHERE " + PlaylistEntry._ID + "=" + ConnectEntry.COLUMN_PLAYLIST_ID + ") AS " + PlaylistEntry.COLUMN_MUSICS +
+                        " FROM " + PlaylistEntry.TABLE_NAME +
+                        " ORDER BY " + PlaylistEntry.COLUMN_TIMESTAMP + " DESC;",
+                null
+        );
+    }
+
+    public Cursor getAllMusics() {
+        return this.database.query(
+                MusicEntry.TABLE_NAME,
+                null,
+                null,
+                null,
+                null,
+                null,
+                MusicEntry.COLUMN_TIMESTAMP + " DESC"
+        );
+    }
 
     // endregion
 
