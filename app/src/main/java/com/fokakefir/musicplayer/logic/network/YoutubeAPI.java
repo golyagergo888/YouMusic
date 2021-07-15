@@ -1,4 +1,4 @@
-package com.fokakefir.musicplayer.network;
+package com.fokakefir.musicplayer.logic.network;
 
 import com.fokakefir.musicplayer.model.YoutubeVideos;
 

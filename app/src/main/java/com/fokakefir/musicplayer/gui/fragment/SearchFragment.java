@@ -19,7 +19,7 @@ import com.fokakefir.musicplayer.gui.activity.MainActivity;
 import com.fokakefir.musicplayer.gui.recyclerview.VideoAdapter;
 import com.fokakefir.musicplayer.model.VideoYT;
 import com.fokakefir.musicplayer.model.YoutubeVideos;
-import com.fokakefir.musicplayer.network.YoutubeAPI;
+import com.fokakefir.musicplayer.logic.network.YoutubeAPI;
 
 import java.util.ArrayList;
 import java.util.List;

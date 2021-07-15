@@ -1,12 +1,9 @@
-package com.fokakefir.musicplayer.background;
+package com.fokakefir.musicplayer.logic.background;
 
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Environment;
-import android.util.Log;
-
-import com.fokakefir.musicplayer.gui.activity.MainActivity;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -15,8 +12,6 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-
-import static android.content.ContentValues.TAG;
 
 public class RequestDownloadMusicStream extends AsyncTask<String, String, String> {
 

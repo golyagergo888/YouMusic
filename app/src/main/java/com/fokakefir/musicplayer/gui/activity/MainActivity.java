@@ -19,12 +19,12 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.fokakefir.musicplayer.R;
-import com.fokakefir.musicplayer.background.RequestDownloadMusicStream;
-import com.fokakefir.musicplayer.background.RequestDownloadThumbnailStream;
+import com.fokakefir.musicplayer.logic.background.RequestDownloadMusicStream;
+import com.fokakefir.musicplayer.logic.background.RequestDownloadThumbnailStream;
 import com.fokakefir.musicplayer.gui.fragment.MusicsFragment;
 import com.fokakefir.musicplayer.gui.fragment.PlaylistsFragment;
 import com.fokakefir.musicplayer.gui.fragment.SearchFragment;
-import com.fokakefir.musicplayer.background.RequestDownloadMusicStreamResponse;
+import com.fokakefir.musicplayer.logic.background.RequestDownloadMusicStreamResponse;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 

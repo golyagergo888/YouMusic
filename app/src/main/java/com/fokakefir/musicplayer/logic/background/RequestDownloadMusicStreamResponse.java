@@ -1,4 +1,4 @@
-package com.fokakefir.musicplayer.background;
+package com.fokakefir.musicplayer.logic.background;
 
 public interface RequestDownloadMusicStreamResponse {
     void onMusicDownloaded();
