@@ -2,6 +2,7 @@ package com.fokakefir.musicplayer.logic.background;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.media.MediaMetadataRetriever;
 import android.os.AsyncTask;
 import android.os.Environment;
 
@@ -18,6 +19,10 @@ public class RequestDownloadMusicStream extends AsyncTask<String, String, String
     private ProgressDialog dialog;
     private RequestDownloadMusicStreamResponse response;
     private Context context;
+
+    private String videoId;
+    private String title;
+    private String artist;
 
     public RequestDownloadMusicStream(RequestDownloadMusicStreamResponse response, Context context) {
         this.response = response;
@@ -38,6 +43,10 @@ public class RequestDownloadMusicStream extends AsyncTask<String, String, String
 
     @Override
     protected String doInBackground(String... params) {
+        this.videoId = params[1];
+        this.title = params[2];
+        this.artist = params[3];
+
         InputStream inputStream = null;
         URL url = null;
         int len1 = 0;
@@ -103,7 +112,22 @@ public class RequestDownloadMusicStream extends AsyncTask<String, String, String
             this.dialog.dismiss();
 
         if (this.response != null)
-            this.response.onMusicDownloaded();
+            this.response.onMusicDownloaded(
+                    this.videoId, this.title, this.artist, getDuration(this.videoId)
+            );
+    }
+
+    private int getDuration(String videoId) {
+        String fileName = videoId + ".m4a";
+        String storagePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)+"/YoutubeMusics";
+
+        String path = storagePath + "/" + fileName;
+        MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
+        mediaMetadataRetriever.setDataSource(path);
+        String strDuration = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+
+        int duration = Integer.parseInt(strDuration.substring(0, strDuration.length() - 3));
+        return duration;
     }
 
 }

@@ -6,7 +6,9 @@ import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteDatabase;
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -19,12 +21,14 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.fokakefir.musicplayer.R;
+import com.fokakefir.musicplayer.logic.database.MusicPlayerContract.*;
 import com.fokakefir.musicplayer.logic.background.RequestDownloadMusicStream;
 import com.fokakefir.musicplayer.logic.background.RequestDownloadThumbnailStream;
 import com.fokakefir.musicplayer.gui.fragment.MusicsFragment;
 import com.fokakefir.musicplayer.gui.fragment.PlaylistsFragment;
 import com.fokakefir.musicplayer.gui.fragment.SearchFragment;
 import com.fokakefir.musicplayer.logic.background.RequestDownloadMusicStreamResponse;
+import com.fokakefir.musicplayer.logic.database.MusicPlayerDBHelper;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
@@ -47,6 +51,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     // region 1. Decl and Init
 
+    private SQLiteDatabase database;
+
     private SearchFragment searchFragment;
     private PlaylistsFragment playlistsFragment;
     private MusicsFragment musicsFragment;
@@ -66,6 +72,9 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        MusicPlayerDBHelper dbHelper = new MusicPlayerDBHelper(this);
+        this.database = dbHelper.getWritableDatabase();
 
         this.searchFragment = new SearchFragment(this);
         this.playlistsFragment = new PlaylistsFragment(this);
@@ -248,7 +257,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     // region 7. Download music and thumbnail
 
-    public void downloadMusic(String url) {
+    public void downloadMusic(String url, String videoArtist) {
         YouTubeUriExtractor youTubeUriExtractor = new YouTubeUriExtractor(this) {
             @Override
             public void onUrisAvailable(String videoId, String videoTitle, SparseArray<YtFile> ytFiles) {
@@ -256,7 +265,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                     try {
                         String downloadUrl = ytFiles.get(YOUTUBE_ITAG_AUDIO_128K).getUrl();
                         RequestDownloadMusicStream requestDownloadMusicStream = new RequestDownloadMusicStream(MainActivity.this, MainActivity.this);
-                        requestDownloadMusicStream.execute(downloadUrl, videoTitle);
+                        requestDownloadMusicStream.execute(downloadUrl, videoId, videoTitle, videoArtist);
                     } catch (Exception e) {
                         Toast.makeText(MainActivity.this, String.valueOf(e), Toast.LENGTH_SHORT).show();
                     }
@@ -296,9 +305,19 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     // region 8. Database
 
     @Override
-    public void onMusicDownloaded() {
+    public void onMusicDownloaded(String videoId, String title, String artist, int length) {
+        ContentValues cv = new ContentValues();
+
+        cv.put(MusicEntry.COLUMN_VIDEO_ID, videoId);
+        cv.put(MusicEntry.COLUMN_TITLE, title);
+        cv.put(MusicEntry.COLUMN_ARTIST, artist);
+        cv.put(MusicEntry.COLUMN_LENGTH, length);
+
+        this.database.insert(MusicEntry.TABLE_NAME, null, cv);
+
         Toast.makeText(this, "Downloaded", Toast.LENGTH_SHORT).show();
     }
+
 
     // endregion
 

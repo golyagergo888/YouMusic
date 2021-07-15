@@ -127,10 +127,9 @@ public class SearchFragment extends Fragment implements Callback<YoutubeVideos>,
     // region 5. Video listener
 
     @Override
-    public void onVideoDownloadClick(String videoId, String thumbnail) {
+    public void onVideoDownloadClick(String videoId, String videoChannel) {
         String url = "https://www.youtube.com/watch?v=" + videoId;
-        this.activity.downloadMusic(url);
-        //this.activity.downloadThumbnail(thumbnail, videoId);
+        this.activity.downloadMusic(url, videoChannel);
     }
 
     // endregion

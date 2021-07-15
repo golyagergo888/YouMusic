@@ -65,6 +65,7 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoViewHol
         holder.imgVideo.setAlpha((float) 1.0);
 
         holder.videoId = currentVideo.getId().getVideoId();
+        holder.videoChannel = currentVideo.getSnippet().getChannelTitle();
         holder.thumbnail = currentVideo.getSnippet().getThumbnails().getMedium().getUrl();
 
     }
@@ -86,6 +87,7 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoViewHol
         public ImageButton btnDownload;
 
         public String videoId;
+        public String videoChannel;
         public String thumbnail;
         public boolean selected;
 
@@ -104,6 +106,7 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoViewHol
             this.btnDownload = itemView.findViewById(R.id.btn_download);
 
             this.videoId = null;
+            this.videoChannel = null;
             this.thumbnail = null;
 
             this.itemView = itemView;
@@ -129,7 +132,7 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoViewHol
                 }
             } else if (view.getId() == R.id.btn_download) {
                 if (this.videoId != null)
-                    this.onVideoListener.onVideoDownloadClick(this.videoId, this.thumbnail);
+                    this.onVideoListener.onVideoDownloadClick(this.videoId, this.videoChannel);
             }
         }
     }
@@ -139,7 +142,7 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoViewHol
     // region 5. Listener interface
 
     public interface OnVideoListener {
-        void onVideoDownloadClick(String videoId, String thumbnail);
+        void onVideoDownloadClick(String videoId, String videoChannel);
     }
 
     // endregion

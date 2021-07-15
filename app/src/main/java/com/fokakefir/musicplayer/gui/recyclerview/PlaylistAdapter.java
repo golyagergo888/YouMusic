@@ -60,28 +60,28 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.Playli
 
         int color = R.color.playlistWhite;
         switch (currentPlaylist.getColor()) {
-            case "red":
+            case Playlist.COLOR_RED:
                 color = R.color.playlistRed;
                 break;
-            case "orange":
+            case Playlist.COLOR_ORANGE:
                 color = R.color.playlistOrange;
                 break;
-            case "yellow":
+            case Playlist.COLOR_YELLOW:
                 color = R.color.playlistYellow;
                 break;
-            case "green":
+            case Playlist.COLOR_GREEN:
                 color = R.color.playlistGreen;
                 break;
-            case "blue":
+            case Playlist.COLOR_BLUE:
                 color = R.color.playlistBlue;
                 break;
-            case "indigo":
+            case Playlist.COLOR_INDIGO:
                 color = R.color.playlistIndigo;
                 break;
-            case "violet":
+            case Playlist.COLOR_VIOLET:
                 color = R.color.playlistViolet;
                 break;
-            case "white":
+            case Playlist.COLOR_WHITE:
                 color = R.color.playlistWhite;
                 break;
         }
