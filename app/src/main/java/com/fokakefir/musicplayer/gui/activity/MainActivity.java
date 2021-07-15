@@ -43,10 +43,13 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     // region 0. Constants
 
     private static final int READ_STORAGE_PERMISSION_REQUEST_CODE = 1;
+
     private static final int YOUTUBE_ITAG_VIDEO_480P = 18;
     private static final int YOUTUBE_ITAG_AUDIO_50K = 249;
     private static final int YOUTUBE_ITAG_AUDIO_160K = 251;
     private static final int YOUTUBE_ITAG_AUDIO_128K = 140;
+
+    public static final int DEFAULT_PLAYLIST_ID = 1;
 
     // endregion
 
@@ -317,12 +320,13 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         long id = this.database.insert(MusicEntry.TABLE_NAME, null, cvMusic);
 
         ContentValues cvConnect = new ContentValues();
-        cvConnect.put(ConnectEntry.COLUMN_PLAYLIST_ID, 1);
+        cvConnect.put(ConnectEntry.COLUMN_PLAYLIST_ID, DEFAULT_PLAYLIST_ID);
         cvConnect.put(ConnectEntry.COLUMN_MUSIC_ID, id);
 
         this.database.insert(ConnectEntry.TABLE_NAME, null, cvConnect);
 
         this.playlistsFragment.swapCursor(getAllPlaylists());
+        this.musicsFragment.swapCursor(getAllMusics(this.musicsFragment.getPlaylistId()));
 
         Toast.makeText(this, "Downloaded", Toast.LENGTH_SHORT).show();
     }
@@ -332,7 +336,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 "SELECT " + PlaylistEntry._ID + ", " + PlaylistEntry.COLUMN_NAME + ", " + PlaylistEntry.COLUMN_COLOR + ", " +
                         "(SELECT COUNT(" + ConnectEntry.COLUMN_MUSIC_ID + ") FROM " + ConnectEntry.TABLE_NAME + " WHERE " + PlaylistEntry._ID + "=" + ConnectEntry.COLUMN_PLAYLIST_ID + ") AS " + PlaylistEntry.COLUMN_MUSICS +
                         " FROM " + PlaylistEntry.TABLE_NAME +
-                        " ORDER BY " + PlaylistEntry.COLUMN_TIMESTAMP + " DESC;",
+                        " ORDER BY " + PlaylistEntry.COLUMN_TIMESTAMP + " ASC;",
                 null
         );
     }
@@ -345,7 +349,20 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 null,
                 null,
                 null,
-                MusicEntry.COLUMN_TIMESTAMP + " DESC"
+                MusicEntry.COLUMN_TIMESTAMP + " ASC"
+        );
+    }
+
+    public Cursor getAllMusics(int playlistId) {
+        final String SQL_SELECT_ALL_MUSIC = "SELECT * FROM " +
+                MusicEntry.TABLE_NAME + ", " + PlaylistEntry.TABLE_NAME + ", " + ConnectEntry.TABLE_NAME +
+                " WHERE " + MusicEntry.TABLE_NAME + "." + MusicEntry._ID + "=" + ConnectEntry.COLUMN_MUSIC_ID +
+                " AND " + PlaylistEntry.TABLE_NAME + "." + PlaylistEntry._ID + "=" + ConnectEntry.COLUMN_PLAYLIST_ID +
+                " ORDER BY " + ConnectEntry.COLUMN_TIMESTAMP + " ASC";
+
+        return this.database.rawQuery(
+                SQL_SELECT_ALL_MUSIC,
+                null
         );
     }
 

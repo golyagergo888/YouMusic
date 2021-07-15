@@ -1,5 +1,6 @@
 package com.fokakefir.musicplayer.gui.fragment;
 
+import android.database.Cursor;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -54,12 +55,16 @@ public class MusicsFragment extends Fragment implements MusicAdapter.OnMusicList
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         this.view = inflater.inflate(R.layout.fragment_musics, container, false);
 
-        this.musics = new ArrayList<>();
-        this.musics.add(new Music(0, "valami", "Hardbass zene", "Az eloado", 123));
+        Cursor cursor = null;
+        if (this.playlistId == MainActivity.DEFAULT_PLAYLIST_ID) {
+            cursor = this.activity.getAllMusics();
+        } else {
+            cursor = this.activity.getAllMusics(this.playlistId);
+        }
 
         this.recyclerView = this.view.findViewById(R.id.recycler_view_musics);
         this.layoutManager = new LinearLayoutManager(getContext());
-        this.adapter = new MusicAdapter(this.musics, this, this.playlistId);
+        this.adapter = new MusicAdapter(cursor, this);
         this.recyclerView.setLayoutManager(this.layoutManager);
         this.recyclerView.setAdapter(this.adapter);
 
@@ -76,5 +81,18 @@ public class MusicsFragment extends Fragment implements MusicAdapter.OnMusicList
     }
 
     // endregion
+
+    // region 4. Database
+
+    public void swapCursor(Cursor cursor) {
+        this.adapter.swapCursor(cursor);
+    }
+
+    public int getPlaylistId() {
+        return playlistId;
+    }
+
+    // endregion
+
 
 }

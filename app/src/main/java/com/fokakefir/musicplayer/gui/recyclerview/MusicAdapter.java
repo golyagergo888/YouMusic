@@ -1,5 +1,6 @@
 package com.fokakefir.musicplayer.gui.recyclerview;
 
+import android.database.Cursor;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.fokakefir.musicplayer.R;
+import com.fokakefir.musicplayer.logic.database.MusicPlayerContract;
 import com.fokakefir.musicplayer.model.Music;
 
 import java.util.List;
@@ -18,18 +20,16 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
 
     // region 1. Decl and Init
 
-    private List<Music> musics;
+    private Cursor cursor;
     private OnMusicListener onMusicListener;
-    private int playlistId;
 
     // endregion
 
     // region 2. Constructor
 
-    public MusicAdapter(List<Music> musics, OnMusicListener onMusicListener, int playlistId) {
-        this.musics = musics;
+    public MusicAdapter(Cursor cursor, OnMusicListener onMusicListener) {
+        this.cursor = cursor;
         this.onMusicListener = onMusicListener;
-        this.playlistId = playlistId;
     }
 
     // endregion
@@ -47,7 +47,16 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
 
     @Override
     public void onBindViewHolder(@NonNull MusicAdapter.MusicViewHolder holder, int position) {
-        Music currentMusic = this.musics.get(position);
+        if (!this.cursor.moveToPosition(position))
+            return;
+
+        Music currentMusic = new Music(
+                this.cursor.getInt(this.cursor.getColumnIndex(MusicPlayerContract.MusicEntry._ID)),
+                this.cursor.getString(this.cursor.getColumnIndex(MusicPlayerContract.MusicEntry.COLUMN_VIDEO_ID)),
+                this.cursor.getString(this.cursor.getColumnIndex(MusicPlayerContract.MusicEntry.COLUMN_TITLE)),
+                this.cursor.getString(this.cursor.getColumnIndex(MusicPlayerContract.MusicEntry.COLUMN_ARTIST)),
+                this.cursor.getInt(this.cursor.getColumnIndex(MusicPlayerContract.MusicEntry.COLUMN_LENGTH))
+        );
 
         holder.txtTitle.setText(currentMusic.getTitle());
         holder.txtArtist.setText(currentMusic.getArtist());
@@ -56,7 +65,18 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
 
     @Override
     public int getItemCount() {
-        return this.musics.size();
+        return this.cursor.getCount();
+    }
+
+    public void swapCursor(Cursor newCursor) {
+        if (this.cursor != null) {
+            this.cursor.close();
+        }
+        this.cursor = newCursor;
+
+        if (newCursor != null) {
+            notifyDataSetChanged();
+        }
     }
 
     // endregion
