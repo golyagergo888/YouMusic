@@ -1,7 +1,10 @@
 package com.fokakefir.musicplayer.gui.recyclerview;
 
 import android.database.Cursor;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -11,6 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.fokakefir.musicplayer.R;
+import com.fokakefir.musicplayer.gui.activity.MainActivity;
 import com.fokakefir.musicplayer.logic.database.MusicPlayerContract;
 import com.fokakefir.musicplayer.model.Music;
 
@@ -22,14 +26,16 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
 
     private Cursor cursor;
     private OnMusicListener onMusicListener;
+    private int playlistId;
 
     // endregion
 
     // region 2. Constructor
 
-    public MusicAdapter(Cursor cursor, OnMusicListener onMusicListener) {
+    public MusicAdapter(Cursor cursor, OnMusicListener onMusicListener, int playlistId) {
         this.cursor = cursor;
         this.onMusicListener = onMusicListener;
+        this.playlistId = playlistId;
     }
 
     // endregion
@@ -83,7 +89,11 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
 
     // region 4. Holder class
 
-    public class MusicViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class MusicViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnCreateContextMenuListener, MenuItem.OnMenuItemClickListener {
+
+        private static final int MENU_ITEM_ADD_ID = 1;
+        private static final int MENU_ITEM_REMOVE_ID = 2;
+        private static final int MENU_ITEM_DELETE_ID = 3;
 
         public ImageView imgMusic;
         public TextView txtTitle;
@@ -105,6 +115,7 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
 
             this.itemView = itemView;
             this.itemView.setOnClickListener(this);
+            this.itemView.setOnCreateContextMenuListener(this);
 
             this.onMusicListener = onMusicListener;
         }
@@ -115,6 +126,39 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
                 this.onMusicListener.onMusicClick(this.music);
             }
         }
+
+        @Override
+        public void onCreateContextMenu(ContextMenu menu, View view, ContextMenu.ContextMenuInfo contextMenuInfo) {
+            menu.setHeaderTitle("Options");
+
+            MenuItem itemAdd = menu.add(Menu.NONE, MENU_ITEM_ADD_ID, 1, "Add music to playlist");
+            itemAdd.setOnMenuItemClickListener(this);
+
+            if (playlistId == MainActivity.DEFAULT_PLAYLIST_ID) {
+                MenuItem itemDelete = menu.add(Menu.NONE, MENU_ITEM_DELETE_ID, 2, "Delete music");
+                itemDelete.setOnMenuItemClickListener(this);
+            } else {
+                MenuItem itemRemove = menu.add(Menu.NONE, MENU_ITEM_REMOVE_ID, 2, "Remove from playlist");
+                itemRemove.setOnMenuItemClickListener(this);
+            }
+        }
+
+        @Override
+        public boolean onMenuItemClick(MenuItem item) {
+            switch (item.getItemId()) {
+                case MENU_ITEM_ADD_ID:
+                    this.onMusicListener.onAddMusicClick(this.music);
+                    return true;
+                case MENU_ITEM_REMOVE_ID:
+                    this.onMusicListener.onRemoveMusicClick(this.music);
+                    return true;
+                case MENU_ITEM_DELETE_ID:
+                    this.onMusicListener.onDeleteMusicClick(this.music);
+                    return true;
+                default:
+                    return false;
+            }
+        }
     }
 
     // endregion
@@ -123,6 +167,9 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
 
     public interface OnMusicListener {
         void onMusicClick(Music music);
+        void onAddMusicClick(Music music);
+        void onRemoveMusicClick(Music music);
+        void onDeleteMusicClick(Music music);
     }
 
     // endregion

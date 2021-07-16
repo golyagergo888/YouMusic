@@ -326,7 +326,9 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         this.database.insert(ConnectEntry.TABLE_NAME, null, cvConnect);
 
         this.playlistsFragment.swapCursor(getAllPlaylists());
-        this.musicsFragment.swapCursor(getAllMusics(this.musicsFragment.getPlaylistId()));
+
+        if (this.musicsFragment != null)
+            this.musicsFragment.swapCursor(getAllMusic(this.musicsFragment.getPlaylistId()));
 
         Toast.makeText(this, "Downloaded", Toast.LENGTH_SHORT).show();
     }
@@ -334,14 +336,14 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     public Cursor getAllPlaylists() {
         return this.database.rawQuery(
                 "SELECT " + PlaylistEntry._ID + ", " + PlaylistEntry.COLUMN_NAME + ", " + PlaylistEntry.COLUMN_COLOR + ", " +
-                        "(SELECT COUNT(" + ConnectEntry.COLUMN_MUSIC_ID + ") FROM " + ConnectEntry.TABLE_NAME + " WHERE " + PlaylistEntry._ID + "=" + ConnectEntry.COLUMN_PLAYLIST_ID + ") AS " + PlaylistEntry.COLUMN_MUSICS +
+                        "(SELECT COUNT(" + ConnectEntry.COLUMN_MUSIC_ID + ") FROM " + ConnectEntry.TABLE_NAME + " WHERE " + PlaylistEntry.TABLE_NAME + "." + PlaylistEntry._ID + "=" + ConnectEntry.COLUMN_PLAYLIST_ID + ") AS " + PlaylistEntry.COLUMN_MUSICS +
                         " FROM " + PlaylistEntry.TABLE_NAME +
                         " ORDER BY " + PlaylistEntry.COLUMN_TIMESTAMP + " ASC;",
                 null
         );
     }
 
-    public Cursor getAllMusics() {
+    public Cursor getAllMusic() {
         return this.database.query(
                 MusicEntry.TABLE_NAME,
                 null,
@@ -353,16 +355,20 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         );
     }
 
-    public Cursor getAllMusics(int playlistId) {
+    public Cursor getAllMusic(int playlistId) {
+        if (playlistId == DEFAULT_PLAYLIST_ID)
+            return getAllMusic();
+
         final String SQL_SELECT_ALL_MUSIC = "SELECT * FROM " +
                 MusicEntry.TABLE_NAME + ", " + PlaylistEntry.TABLE_NAME + ", " + ConnectEntry.TABLE_NAME +
                 " WHERE " + MusicEntry.TABLE_NAME + "." + MusicEntry._ID + "=" + ConnectEntry.COLUMN_MUSIC_ID +
                 " AND " + PlaylistEntry.TABLE_NAME + "." + PlaylistEntry._ID + "=" + ConnectEntry.COLUMN_PLAYLIST_ID +
-                " ORDER BY " + ConnectEntry.COLUMN_TIMESTAMP + " ASC";
+                " AND " + PlaylistEntry.TABLE_NAME + "." + PlaylistEntry._ID + "=?" +
+                " ORDER BY " + ConnectEntry.COLUMN_TIMESTAMP + " ASC;";
 
         return this.database.rawQuery(
                 SQL_SELECT_ALL_MUSIC,
-                null
+                new String[]{String.valueOf(playlistId)}
         );
     }
 

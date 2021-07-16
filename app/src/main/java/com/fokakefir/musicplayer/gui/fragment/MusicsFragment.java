@@ -18,7 +18,6 @@ import com.fokakefir.musicplayer.gui.activity.MainActivity;
 import com.fokakefir.musicplayer.gui.recyclerview.MusicAdapter;
 import com.fokakefir.musicplayer.model.Music;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class MusicsFragment extends Fragment implements MusicAdapter.OnMusicListener {
@@ -57,14 +56,14 @@ public class MusicsFragment extends Fragment implements MusicAdapter.OnMusicList
 
         Cursor cursor = null;
         if (this.playlistId == MainActivity.DEFAULT_PLAYLIST_ID) {
-            cursor = this.activity.getAllMusics();
+            cursor = this.activity.getAllMusic();
         } else {
-            cursor = this.activity.getAllMusics(this.playlistId);
+            cursor = this.activity.getAllMusic(this.playlistId);
         }
 
         this.recyclerView = this.view.findViewById(R.id.recycler_view_musics);
         this.layoutManager = new LinearLayoutManager(getContext());
-        this.adapter = new MusicAdapter(cursor, this);
+        this.adapter = new MusicAdapter(cursor, this, this.playlistId);
         this.recyclerView.setLayoutManager(this.layoutManager);
         this.recyclerView.setAdapter(this.adapter);
 
@@ -78,6 +77,21 @@ public class MusicsFragment extends Fragment implements MusicAdapter.OnMusicList
     @Override
     public void onMusicClick(Music music) {
         Toast.makeText(this.activity, music.getTitle() + " id: " + music.getId(), Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onAddMusicClick(Music music) {
+        Toast.makeText(activity, "Add music " + music.getId(), Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onRemoveMusicClick(Music music) {
+        Toast.makeText(activity, "Remove music " + music.getId(), Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onDeleteMusicClick(Music music) {
+        Toast.makeText(activity, "Delete music " + music.getId(), Toast.LENGTH_SHORT).show();
     }
 
     // endregion
