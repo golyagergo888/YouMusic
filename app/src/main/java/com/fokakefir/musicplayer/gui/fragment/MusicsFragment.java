@@ -91,7 +91,7 @@ public class MusicsFragment extends Fragment implements MusicAdapter.OnMusicList
 
     @Override
     public void onDeleteMusicClick(Music music) {
-        Toast.makeText(activity, "Delete music " + music.getId(), Toast.LENGTH_SHORT).show();
+        this.activity.deleteMusicFromStorage(music);
     }
 
     // endregion

@@ -15,6 +15,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.SparseArray;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,9 +31,11 @@ import com.fokakefir.musicplayer.gui.fragment.PlaylistsFragment;
 import com.fokakefir.musicplayer.gui.fragment.SearchFragment;
 import com.fokakefir.musicplayer.logic.background.RequestDownloadMusicStreamResponse;
 import com.fokakefir.musicplayer.logic.database.MusicPlayerDBHelper;
+import com.fokakefir.musicplayer.model.Music;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
+import java.io.File;
 import java.io.IOException;
 
 import at.huber.youtubeExtractor.YouTubeUriExtractor;
@@ -259,7 +262,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     // endregion
 
-    // region 7. Download music and thumbnail
+    // region 7. Download and delete music
 
     public void downloadMusic(String url, String videoArtist) {
         YouTubeUriExtractor youTubeUriExtractor = new YouTubeUriExtractor(this) {
@@ -282,6 +285,15 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     public void downloadThumbnail(String url, String name) {
         new RequestDownloadThumbnailStream(this).execute(url, name);
+    }
+
+    public void deleteMusicFromStorage(Music music) {
+        File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)+"/YoutubeMusics");
+        File file = new File(dir, music.getVideoId() + ".m4a");
+        boolean deleted = file.delete();
+
+        if (deleted)
+            deleteMusicFromDatabase(music);
     }
 
     public void requestPermissionForReadExternalStorage() throws Exception {
@@ -333,10 +345,25 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         Toast.makeText(this, "Downloaded", Toast.LENGTH_SHORT).show();
     }
 
+    public void deleteMusicFromDatabase(Music music) {
+        this.database.delete(MusicEntry.TABLE_NAME, MusicEntry._ID + "=?", new String[]{String.valueOf(music.getId())});
+        this.database.delete(ConnectEntry.TABLE_NAME, ConnectEntry.COLUMN_MUSIC_ID + "=?", new String[]{String.valueOf(music.getId())});
+
+        this.playlistsFragment.swapCursor(getAllPlaylists());
+
+        if (this.musicsFragment != null)
+            this.musicsFragment.swapCursor(getAllMusic(this.musicsFragment.getPlaylistId()));
+
+        Toast.makeText(this, "Music deleted", Toast.LENGTH_SHORT).show();
+    }
+
     public Cursor getAllPlaylists() {
         return this.database.rawQuery(
                 "SELECT " + PlaylistEntry._ID + ", " + PlaylistEntry.COLUMN_NAME + ", " + PlaylistEntry.COLUMN_COLOR + ", " +
-                        "(SELECT COUNT(" + ConnectEntry.COLUMN_MUSIC_ID + ") FROM " + ConnectEntry.TABLE_NAME + " WHERE " + PlaylistEntry.TABLE_NAME + "." + PlaylistEntry._ID + "=" + ConnectEntry.COLUMN_PLAYLIST_ID + ") AS " + PlaylistEntry.COLUMN_MUSICS +
+                        "(SELECT COUNT(" + ConnectEntry.COLUMN_MUSIC_ID + ") FROM " + ConnectEntry.TABLE_NAME + ", " + MusicEntry.TABLE_NAME +
+                        " WHERE " + PlaylistEntry.TABLE_NAME + "." + PlaylistEntry._ID + "=" + ConnectEntry.COLUMN_PLAYLIST_ID +
+                        " AND " + ConnectEntry.COLUMN_MUSIC_ID + "=" + MusicEntry.TABLE_NAME + "." + MusicEntry._ID +
+                        ") AS " + PlaylistEntry.COLUMN_MUSICS +
                         " FROM " + PlaylistEntry.TABLE_NAME +
                         " ORDER BY " + PlaylistEntry.COLUMN_TIMESTAMP + " ASC;",
                 null
