@@ -99,4 +99,20 @@ public class PlaylistsFragment extends Fragment implements PlaylistAdapter.OnPla
     }
 
     // endregion
+
+    // region 5. Getters and Setters
+
+    public void setChooseMode(boolean condition) {
+        if (condition) {
+            this.fabAddPlaylist.setVisibility(View.GONE);
+            this.adapter.setOptions(false);
+        } else {
+            this.fabAddPlaylist.setVisibility(View.VISIBLE);
+            this.adapter.setOptions(true);
+        }
+        this.adapter.notifyDataSetChanged();
+    }
+
+    // endregion
+
 }

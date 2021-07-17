@@ -15,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.fokakefir.musicplayer.R;
+import com.fokakefir.musicplayer.gui.activity.MainActivity;
 import com.fokakefir.musicplayer.logic.database.MusicPlayerContract;
 import com.fokakefir.musicplayer.model.Playlist;
 
@@ -28,6 +29,8 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.Playli
     private OnPlaylistListener onPlaylistListener;
     private Context context;
 
+    private boolean options;
+
     // endregion
 
     // region 2. Constructor
@@ -36,6 +39,7 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.Playli
         this.cursor = cursor;
         this.onPlaylistListener = onPlaylistListener;
         this.context = context;
+        this.options = true;
     }
 
     // endregion
@@ -81,11 +85,21 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.Playli
         }
         holder.imgPlaylist.setBackgroundColor(this.context.getResources().getColor(color));
         //holder.imgPlaylist.setColorFilter(this.context.getResources().getColor(color));
+
+        if (this.options) {
+            // TODO options on
+        } else {
+            // TODO options off
+        }
     }
 
     @Override
     public int getItemCount() {
         return this.cursor.getCount();
+    }
+
+    public void setOptions(boolean options) {
+        this.options = options;
     }
 
     public void swapCursor(Cursor newCursor) {

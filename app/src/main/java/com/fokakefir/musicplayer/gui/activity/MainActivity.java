@@ -23,6 +23,7 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.fokakefir.musicplayer.R;
+import com.fokakefir.musicplayer.gui.fragment.ChoosePlaylistFragment;
 import com.fokakefir.musicplayer.logic.database.MusicPlayerContract.*;
 import com.fokakefir.musicplayer.logic.background.RequestDownloadMusicStream;
 import com.fokakefir.musicplayer.logic.background.RequestDownloadThumbnailStream;
@@ -63,6 +64,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     private SearchFragment searchFragment;
     private PlaylistsFragment playlistsFragment;
     private MusicsFragment musicsFragment;
+    private ChoosePlaylistFragment choosePlaylistFragment;
 
     private BottomNavigationView bottomNav;
     private SlidingUpPanelLayout layout;
@@ -86,6 +88,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         this.searchFragment = new SearchFragment(this);
         this.playlistsFragment = new PlaylistsFragment(this);
         this.musicsFragment = null;
+        this.choosePlaylistFragment = null;
 
         this.bottomNav = findViewById(R.id.bottom_navigation);
         this.layout = findViewById(R.id.sliding_up_panel);
@@ -118,9 +121,14 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     @Override
     public void onBackPressed() {
-        if (this.musicsFragment != null && this.bottomNav.getSelectedItemId() == R.id.nav_playlists) {
-            this.musicsFragment = null;
-            super.onBackPressed();
+        if (this.bottomNav.getSelectedItemId() == R.id.nav_playlists) {
+            if (this.choosePlaylistFragment != null) {
+                this.musicsFragment = null;
+                super.onBackPressed();
+            } else if (this.musicsFragment != null) {
+                this.musicsFragment = null;
+                super.onBackPressed();
+            }
         }
     }
 
@@ -140,6 +148,9 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                     if (this.musicsFragment != null) {
                         getSupportFragmentManager().beginTransaction().hide(this.musicsFragment).commit();
                     }
+                    if (this.choosePlaylistFragment != null) {
+                        closeChoosePlaylistFragment();
+                    }
                     return true;
                 case R.id.nav_playlists:
                     getSupportFragmentManager().beginTransaction().hide(this.searchFragment).commit();
@@ -157,6 +168,16 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         this.musicsFragment = new MusicsFragment(this, playlistId);
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.fragment_container, this.musicsFragment).addToBackStack(null).commit();
+    }
+
+    public void addChoosePlaylistFragment(int musicId) {
+        this.choosePlaylistFragment = new ChoosePlaylistFragment(this, musicId);
+        getSupportFragmentManager().beginTransaction()
+                .add(R.id.fragment_container, this.choosePlaylistFragment).addToBackStack(null).commit();
+    }
+
+    public void closeChoosePlaylistFragment() {
+        getSupportFragmentManager().popBackStack();
     }
 
     // endregion
@@ -346,6 +367,22 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         this.playlistsFragment.swapCursor(getAllPlaylists());
     }
 
+    public void insertConnection(int playlistId, int musicId) {
+        ContentValues cv = new ContentValues();
+        cv.put(ConnectEntry.COLUMN_PLAYLIST_ID, playlistId);
+        cv.put(ConnectEntry.COLUMN_MUSIC_ID, musicId);
+
+        this.database.insert(ConnectEntry.TABLE_NAME, null, cv);
+
+        this.playlistsFragment.swapCursor(getAllPlaylists());
+        if (this.musicsFragment != null)
+            this.musicsFragment.swapCursor(getAllMusic(this.musicsFragment.getPlaylistId()));
+
+        closeChoosePlaylistFragment();
+
+        Toast.makeText(this, "Music added to playlist", Toast.LENGTH_SHORT).show();
+    }
+
     public void deleteMusicFromDatabase(Music music) {
         this.database.delete(MusicEntry.TABLE_NAME, MusicEntry._ID + "=?", new String[]{String.valueOf(music.getId())});
         this.database.delete(ConnectEntry.TABLE_NAME, ConnectEntry.COLUMN_MUSIC_ID + "=?", new String[]{String.valueOf(music.getId())});
@@ -358,6 +395,10 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         Toast.makeText(this, "Music deleted", Toast.LENGTH_SHORT).show();
     }
 
+    // endregion
+
+    // region 9. Getters and Setters
+
     public Cursor getAllPlaylists() {
         return this.database.rawQuery(
                 "SELECT " + PlaylistEntry._ID + ", " + PlaylistEntry.COLUMN_NAME + ", " + PlaylistEntry.COLUMN_COLOR + ", " +
@@ -368,6 +409,25 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                         " FROM " + PlaylistEntry.TABLE_NAME +
                         " ORDER BY " + PlaylistEntry.COLUMN_TIMESTAMP + " ASC;",
                 null
+        );
+    }
+
+    public Cursor getAllChoosePlaylists(int musicId) {
+        final String SQL_SELECT_ALL_CHOOSE_PLAYLISTS = "SELECT DISTINCT " + PlaylistEntry._ID + ", " + PlaylistEntry.COLUMN_NAME + ", " + PlaylistEntry.COLUMN_COLOR + ", " +
+                "(SELECT COUNT(" + ConnectEntry.COLUMN_MUSIC_ID + ") FROM " + ConnectEntry.TABLE_NAME + ", " + MusicEntry.TABLE_NAME +
+                    " WHERE " + PlaylistEntry.TABLE_NAME + "." + PlaylistEntry._ID + "=" + ConnectEntry.COLUMN_PLAYLIST_ID +
+                    " AND " + ConnectEntry.COLUMN_MUSIC_ID + "=" + MusicEntry.TABLE_NAME + "." + MusicEntry._ID +
+                ") AS " + PlaylistEntry.COLUMN_MUSICS +
+                " FROM " + PlaylistEntry.TABLE_NAME +
+                " WHERE " + PlaylistEntry._ID + " NOT IN " +
+                "(SELECT " + ConnectEntry.COLUMN_PLAYLIST_ID +
+                    " FROM " + ConnectEntry.TABLE_NAME +
+                    " WHERE " + ConnectEntry.COLUMN_MUSIC_ID + "=?)" +
+                " ORDER BY " + PlaylistEntry.TABLE_NAME + "." + PlaylistEntry.COLUMN_TIMESTAMP + " ASC;";
+
+        return this.database.rawQuery(
+                SQL_SELECT_ALL_CHOOSE_PLAYLISTS,
+                new String[]{String.valueOf(musicId)}
         );
     }
 
@@ -387,7 +447,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         if (playlistId == DEFAULT_PLAYLIST_ID)
             return getAllMusic();
 
-        final String SQL_SELECT_ALL_MUSIC = "SELECT * FROM " +
+        final String SQL_SELECT_ALL_MUSIC = "SELECT " + MusicEntry.TABLE_NAME + ".*" + " FROM " +
                 MusicEntry.TABLE_NAME + ", " + PlaylistEntry.TABLE_NAME + ", " + ConnectEntry.TABLE_NAME +
                 " WHERE " + MusicEntry.TABLE_NAME + "." + MusicEntry._ID + "=" + ConnectEntry.COLUMN_MUSIC_ID +
                 " AND " + PlaylistEntry.TABLE_NAME + "." + PlaylistEntry._ID + "=" + ConnectEntry.COLUMN_PLAYLIST_ID +

@@ -38,8 +38,6 @@ public class MusicsFragment extends Fragment implements MusicAdapter.OnMusicList
     private MusicAdapter adapter;
     private RecyclerView.LayoutManager layoutManager;
 
-    private List<Music> musics;
-
     // endregion
 
     // region 2. Lifecycle and Constructor
@@ -81,7 +79,7 @@ public class MusicsFragment extends Fragment implements MusicAdapter.OnMusicList
 
     @Override
     public void onAddMusicClick(Music music) {
-        Toast.makeText(activity, "Add music " + music.getId(), Toast.LENGTH_SHORT).show();
+        this.activity.addChoosePlaylistFragment(music.getId());
     }
 
     @Override
