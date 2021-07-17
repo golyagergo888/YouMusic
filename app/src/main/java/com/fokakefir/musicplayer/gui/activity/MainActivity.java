@@ -112,7 +112,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         }
     }
 
-
     @Override
     public void onStop() {
         super.onStop();
@@ -130,6 +129,26 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 super.onBackPressed();
             }
         }
+    }
+
+    public void requestPermissionForReadExternalStorage() throws Exception {
+        try {
+            ActivityCompat.requestPermissions((Activity) this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    READ_STORAGE_PERMISSION_REQUEST_CODE);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    public boolean checkPermissionForReadExternalStorage() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            int result = this.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE);
+            int result2 = this.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+            return (result == PackageManager.PERMISSION_GRANTED && result2 == PackageManager.PERMISSION_GRANTED);
+        }
+        return false;
     }
 
     // endregion
@@ -297,6 +316,11 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         youTubeUriExtractor.execute(url);
     }
 
+    @Override
+    public void onMusicDownloaded(String videoId, String title, String artist, int length) {
+        insertMusic(videoId, title, artist, length);
+    }
+
     public void downloadThumbnail(String url, String name) {
         new RequestDownloadThumbnailStream(this).execute(url, name);
     }
@@ -307,35 +331,14 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         boolean deleted = file.delete();
 
         if (deleted)
-            deleteMusicFromDatabase(music);
-    }
-
-    public void requestPermissionForReadExternalStorage() throws Exception {
-        try {
-            ActivityCompat.requestPermissions((Activity) this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    READ_STORAGE_PERMISSION_REQUEST_CODE);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
-        }
-    }
-
-    public boolean checkPermissionForReadExternalStorage() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            int result = this.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE);
-            int result2 = this.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-
-            return (result == PackageManager.PERMISSION_GRANTED && result2 == PackageManager.PERMISSION_GRANTED);
-        }
-        return false;
+            deleteMusic(music);
     }
 
     // endregion
 
     // region 8. Database
 
-    @Override
-    public void onMusicDownloaded(String videoId, String title, String artist, int length) {
+    public void insertMusic(String videoId, String title, String artist, int length) {
         ContentValues cvMusic = new ContentValues();
         cvMusic.put(MusicEntry.COLUMN_VIDEO_ID, videoId);
         cvMusic.put(MusicEntry.COLUMN_TITLE, title);
@@ -383,7 +386,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         Toast.makeText(this, "Music added to playlist", Toast.LENGTH_SHORT).show();
     }
 
-    public void deleteMusicFromDatabase(Music music) {
+    public void deleteMusic(Music music) {
         this.database.delete(MusicEntry.TABLE_NAME, MusicEntry._ID + "=?", new String[]{String.valueOf(music.getId())});
         this.database.delete(ConnectEntry.TABLE_NAME, ConnectEntry.COLUMN_MUSIC_ID + "=?", new String[]{String.valueOf(music.getId())});
 
@@ -393,6 +396,25 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             this.musicsFragment.swapCursor(getAllMusic(this.musicsFragment.getPlaylistId()));
 
         Toast.makeText(this, "Music deleted", Toast.LENGTH_SHORT).show();
+    }
+
+    public void deletePlaylist(int playlistId) {
+
+    }
+
+    public void deleteConnection(int playlistId, int musicId) {
+        this.database.delete(
+                ConnectEntry.TABLE_NAME,
+                ConnectEntry.COLUMN_PLAYLIST_ID + "=? AND " + ConnectEntry.COLUMN_MUSIC_ID + "=?",
+                new String[]{String.valueOf(playlistId), String.valueOf(musicId)}
+        );
+
+        this.playlistsFragment.swapCursor(getAllPlaylists());
+
+        if (this.musicsFragment != null)
+            this.musicsFragment.swapCursor(getAllMusic(this.musicsFragment.getPlaylistId()));
+
+        Toast.makeText(this, "Music removed from playlist", Toast.LENGTH_SHORT).show();
     }
 
     // endregion
@@ -423,7 +445,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 "(SELECT " + ConnectEntry.COLUMN_PLAYLIST_ID +
                     " FROM " + ConnectEntry.TABLE_NAME +
                     " WHERE " + ConnectEntry.COLUMN_MUSIC_ID + "=?)" +
-                " ORDER BY " + PlaylistEntry.TABLE_NAME + "." + PlaylistEntry.COLUMN_TIMESTAMP + " ASC;";
+                " ORDER BY " + PlaylistEntry.COLUMN_TIMESTAMP + " ASC;";
 
         return this.database.rawQuery(
                 SQL_SELECT_ALL_CHOOSE_PLAYLISTS,

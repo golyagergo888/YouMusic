@@ -84,7 +84,7 @@ public class MusicsFragment extends Fragment implements MusicAdapter.OnMusicList
 
     @Override
     public void onRemoveMusicClick(Music music) {
-        Toast.makeText(activity, "Remove music " + music.getId(), Toast.LENGTH_SHORT).show();
+        this.activity.deleteConnection(this.playlistId, music.getId());
     }
 
     @Override
@@ -99,6 +99,10 @@ public class MusicsFragment extends Fragment implements MusicAdapter.OnMusicList
     public void swapCursor(Cursor cursor) {
         this.adapter.swapCursor(cursor);
     }
+
+    // endregion
+
+    // region 5. Getters and Setters
 
     public int getPlaylistId() {
         return playlistId;
