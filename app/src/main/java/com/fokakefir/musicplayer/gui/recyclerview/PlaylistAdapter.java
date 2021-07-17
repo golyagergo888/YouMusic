@@ -90,6 +90,8 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.Playli
         //holder.imgPlaylist.setColorFilter(this.context.getResources().getColor(color));
 
         holder.options = this.options;
+        holder.name = this.cursor.getString(this.cursor.getColumnIndex(MusicPlayerContract.PlaylistEntry.COLUMN_NAME));
+        holder.color = this.cursor.getString(this.cursor.getColumnIndex(MusicPlayerContract.PlaylistEntry.COLUMN_COLOR));
     }
 
     @Override
@@ -126,6 +128,8 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.Playli
         public TextView txtSongs;
 
         public int playlistId;
+        public String name;
+        public String color;
 
         public boolean options;
 
@@ -175,7 +179,7 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.Playli
         public boolean onMenuItemClick(MenuItem item) {
             switch (item.getItemId()) {
                 case MENU_ITEM_EDIT_ID:
-                    this.onPlaylistListener.onEditPlaylistClick(this.playlistId);
+                    this.onPlaylistListener.onEditPlaylistClick(this.playlistId, this.name, this.color);
                     return true;
                 case MENU_ITEM_DELETE_ID:
                     this.onPlaylistListener.onDeletePlaylistClick(this.playlistId);
@@ -192,7 +196,7 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.Playli
 
     public interface OnPlaylistListener {
         void onPlaylistClick(int playlistId);
-        void onEditPlaylistClick(int playlistId);
+        void onEditPlaylistClick(int playlistId, String name, String color);
         void onDeletePlaylistClick(int playlistId);
     }
 

@@ -23,12 +23,26 @@ public class PlaylistDialog extends AppCompatDialogFragment implements AdapterVi
     private EditText txtPlaylist;
     private Spinner spinner;
 
+    private String strName;
     private String strColor;
+
+    private int playlistId;
+
+    private boolean edit;
 
     private OnPlaylistDialogListener listener;
 
     public PlaylistDialog(OnPlaylistDialogListener listener) {
         this.listener = listener;
+        this.edit = false;
+    }
+
+    public PlaylistDialog(int playlistId, String strName, String strColor, OnPlaylistDialogListener listener) {
+        this.playlistId = playlistId;
+        this.strName = strName;
+        this.strColor = strColor;
+        this.listener = listener;
+        this.edit = true;
     }
 
     @NonNull
@@ -50,8 +64,12 @@ public class PlaylistDialog extends AppCompatDialogFragment implements AdapterVi
                 .setPositiveButton("ok", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        String name = txtPlaylist.getText().toString().trim();
-                        listener.onPlaylistCreate(name, strColor);
+                        strName = txtPlaylist.getText().toString().trim();
+                        if (!edit) {
+                            listener.onPlaylistCreate(strName, strColor);
+                        } else {
+                            listener.onPlaylistEdit(playlistId, strName, strColor);
+                        }
                     }
                 });
 
@@ -62,6 +80,12 @@ public class PlaylistDialog extends AppCompatDialogFragment implements AdapterVi
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         this.spinner.setAdapter(adapter);
         this.spinner.setOnItemSelectedListener(this);
+
+        if (this.strName != null && this.strColor != null) {
+            this.txtPlaylist.setText(strName);
+            int position = adapter.getPosition(this.strColor);
+            this.spinner.setSelection(position);
+        }
 
         return builder.create();
     }
@@ -79,6 +103,7 @@ public class PlaylistDialog extends AppCompatDialogFragment implements AdapterVi
 
     public interface OnPlaylistDialogListener {
         void onPlaylistCreate(String name, String color);
+        void onPlaylistEdit(int playlistId, String name, String color);
     }
 
 }

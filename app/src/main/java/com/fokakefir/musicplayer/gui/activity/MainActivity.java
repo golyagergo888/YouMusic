@@ -386,7 +386,15 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         Toast.makeText(this, "Music added to playlist", Toast.LENGTH_SHORT).show();
     }
 
-    public void updatePlaylist(int playlistId, String newName, String newColor) {}
+    public void updatePlaylist(int playlistId, String newName, String newColor) {
+        ContentValues cv = new ContentValues();
+        cv.put(PlaylistEntry.COLUMN_NAME, newName);
+        cv.put(PlaylistEntry.COLUMN_COLOR, newColor);
+
+        this.database.update(PlaylistEntry.TABLE_NAME, cv, PlaylistEntry._ID + "=?", new String[]{String.valueOf(playlistId)});
+
+        this.playlistsFragment.swapCursor(getAllPlaylists());
+    }
 
     public void deleteMusic(Music music) {
         this.database.delete(MusicEntry.TABLE_NAME, MusicEntry._ID + "=?", new String[]{String.valueOf(music.getId())});

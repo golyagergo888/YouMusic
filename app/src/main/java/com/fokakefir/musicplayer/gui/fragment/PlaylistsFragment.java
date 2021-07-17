@@ -74,8 +74,9 @@ public class PlaylistsFragment extends Fragment implements PlaylistAdapter.OnPla
     }
 
     @Override
-    public void onEditPlaylistClick(int playlistId) {
-        Toast.makeText(activity, "Edit " + playlistId, Toast.LENGTH_SHORT).show();
+    public void onEditPlaylistClick(int playlistId, String name, String color) {
+        PlaylistDialog dialog = new PlaylistDialog(playlistId, name, color, this);
+        dialog.show(this.activity.getSupportFragmentManager(), "playlist dialog");
     }
 
     @Override
@@ -106,6 +107,11 @@ public class PlaylistsFragment extends Fragment implements PlaylistAdapter.OnPla
     @Override
     public void onPlaylistCreate(String name, String color) {
         this.activity.insertPlaylist(name, color);
+    }
+
+    @Override
+    public void onPlaylistEdit(int playlistId, String name, String color) {
+        this.activity.updatePlaylist(playlistId, name, color);
     }
 
     // endregion
