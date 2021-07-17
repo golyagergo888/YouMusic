@@ -73,6 +73,16 @@ public class PlaylistsFragment extends Fragment implements PlaylistAdapter.OnPla
         this.activity.addMusicsFragment(playlistId);
     }
 
+    @Override
+    public void onEditPlaylistClick(int playlistId) {
+        Toast.makeText(activity, "Edit " + playlistId, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onDeletePlaylistClick(int playlistId) {
+        this.activity.deletePlaylist(playlistId);
+    }
+
     // endregion
 
     // region 4. Floating Button listener

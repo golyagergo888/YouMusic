@@ -4,7 +4,10 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.ColorFilter;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -86,11 +89,7 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.Playli
         holder.imgPlaylist.setBackgroundColor(this.context.getResources().getColor(color));
         //holder.imgPlaylist.setColorFilter(this.context.getResources().getColor(color));
 
-        if (this.options) {
-            // TODO options on
-        } else {
-            // TODO options off
-        }
+        holder.options = this.options;
     }
 
     @Override
@@ -117,13 +116,18 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.Playli
 
     // region 4. Holder class
 
-    public class PlaylistViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class PlaylistViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnCreateContextMenuListener, MenuItem.OnMenuItemClickListener {
+
+        private static final int MENU_ITEM_EDIT_ID = 1;
+        private static final int MENU_ITEM_DELETE_ID = 2;
 
         public ImageView imgPlaylist;
         public TextView txtName;
         public TextView txtSongs;
 
         public int playlistId;
+
+        public boolean options;
 
         private View itemView;
 
@@ -133,6 +137,7 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.Playli
             super(itemView);
 
             this.playlistId = 0;
+            this.options = true;
 
             this.imgPlaylist = itemView.findViewById(R.id.img_playlist);
             this.txtName = itemView.findViewById(R.id.txt_playlist_name);
@@ -140,6 +145,7 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.Playli
 
             this.itemView = itemView;
             this.itemView.setOnClickListener(this);
+            this.itemView.setOnCreateContextMenuListener(this);
 
             this.onPlaylistListener = onPlaylistListener;
         }
@@ -150,6 +156,34 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.Playli
                 this.onPlaylistListener.onPlaylistClick(this.playlistId);
             }
         }
+
+        @Override
+        public void onCreateContextMenu(ContextMenu menu, View view, ContextMenu.ContextMenuInfo contextMenuInfo) {
+            if (!this.options || this.playlistId == MainActivity.DEFAULT_PLAYLIST_ID)
+                return;
+
+            menu.setHeaderTitle("Options");
+
+            MenuItem itemEdit = menu.add(Menu.NONE, MENU_ITEM_EDIT_ID, 1, "Edit playlist");
+            MenuItem itemDelete = menu.add(Menu.NONE, MENU_ITEM_DELETE_ID, 2, "Delete playlist");
+
+            itemEdit.setOnMenuItemClickListener(this);
+            itemDelete.setOnMenuItemClickListener(this);
+        }
+
+        @Override
+        public boolean onMenuItemClick(MenuItem item) {
+            switch (item.getItemId()) {
+                case MENU_ITEM_EDIT_ID:
+                    this.onPlaylistListener.onEditPlaylistClick(this.playlistId);
+                    return true;
+                case MENU_ITEM_DELETE_ID:
+                    this.onPlaylistListener.onDeletePlaylistClick(this.playlistId);
+                    return true;
+                default:
+                    return false;
+            }
+        }
     }
 
     // endregion
@@ -158,6 +192,8 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.Playli
 
     public interface OnPlaylistListener {
         void onPlaylistClick(int playlistId);
+        void onEditPlaylistClick(int playlistId);
+        void onDeletePlaylistClick(int playlistId);
     }
 
     // endregion

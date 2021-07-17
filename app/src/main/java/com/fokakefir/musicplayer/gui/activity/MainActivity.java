@@ -386,6 +386,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         Toast.makeText(this, "Music added to playlist", Toast.LENGTH_SHORT).show();
     }
 
+    public void updatePlaylist(int playlistId, String newName, String newColor) {}
+
     public void deleteMusic(Music music) {
         this.database.delete(MusicEntry.TABLE_NAME, MusicEntry._ID + "=?", new String[]{String.valueOf(music.getId())});
         this.database.delete(ConnectEntry.TABLE_NAME, ConnectEntry.COLUMN_MUSIC_ID + "=?", new String[]{String.valueOf(music.getId())});
@@ -399,7 +401,12 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     }
 
     public void deletePlaylist(int playlistId) {
+        this.database.delete(PlaylistEntry.TABLE_NAME, PlaylistEntry._ID + "=?", new String[]{String.valueOf(playlistId)});
+        this.database.delete(ConnectEntry.TABLE_NAME, ConnectEntry.COLUMN_PLAYLIST_ID + "=?", new String[]{String.valueOf(playlistId)});
 
+        this.playlistsFragment.swapCursor(getAllPlaylists());
+
+        Toast.makeText(this, "Playlist deleted", Toast.LENGTH_SHORT).show();
     }
 
     public void deleteConnection(int playlistId, int musicId) {
