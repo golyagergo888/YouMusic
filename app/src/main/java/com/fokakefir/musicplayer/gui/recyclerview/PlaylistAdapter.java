@@ -78,15 +78,6 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.Playli
             case Playlist.COLOR_BLUE:
                 color = R.color.playlistBlue;
                 break;
-            case Playlist.COLOR_INDIGO:
-                color = R.color.playlistIndigo;
-                break;
-            case Playlist.COLOR_VIOLET:
-                color = R.color.playlistViolet;
-                break;
-            case Playlist.COLOR_WHITE:
-                color = R.color.playlistWhite;
-                break;
         }
         holder.imgPlaylist.setBackgroundColor(this.context.getResources().getColor(color));
         //holder.imgPlaylist.setColorFilter(this.context.getResources().getColor(color));

@@ -9,9 +9,6 @@ public class Playlist {
     public static final String COLOR_YELLOW = "yellow";
     public static final String COLOR_GREEN = "green";
     public static final String COLOR_BLUE = "blue";
-    public static final String COLOR_INDIGO = "indigo";
-    public static final String COLOR_VIOLET = "violet";
-    public static final String COLOR_WHITE = "white";
 
     private int id;
     private String name;

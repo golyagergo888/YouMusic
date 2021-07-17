@@ -94,7 +94,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         this.bottomNav.setOnNavigationItemSelectedListener(this);
         getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, this.searchFragment).commit();
         getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, this.playlistsFragment).hide(this.playlistsFragment).commit();
-        getSupportActionBar().setTitle("YouTube");
 
         this.btnPlay.setImageResource(R.drawable.ic_baseline_play_music);
         this.btnPlay.setOnClickListener(this);
@@ -119,9 +118,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     @Override
     public void onBackPressed() {
-        if (this.musicsFragment != null && getSupportActionBar().getTitle() == "Musics") {
+        if (this.musicsFragment != null && this.bottomNav.getSelectedItemId() == R.id.nav_playlists) {
             this.musicsFragment = null;
-            getSupportActionBar().setTitle("Playlists");
             super.onBackPressed();
         }
     }
@@ -142,16 +140,12 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                     if (this.musicsFragment != null) {
                         getSupportFragmentManager().beginTransaction().hide(this.musicsFragment).commit();
                     }
-                    getSupportActionBar().setTitle("YouTube");
                     return true;
                 case R.id.nav_playlists:
                     getSupportFragmentManager().beginTransaction().hide(this.searchFragment).commit();
                     getSupportFragmentManager().beginTransaction().show(this.playlistsFragment).commit();
                     if (this.musicsFragment != null) {
                         getSupportFragmentManager().beginTransaction().show(this.musicsFragment).commit();
-                        getSupportActionBar().setTitle("Musics");
-                    } else {
-                        getSupportActionBar().setTitle("Playlists");
                     }
                     return true;
             }
@@ -163,7 +157,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         this.musicsFragment = new MusicsFragment(this, playlistId);
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.fragment_container, this.musicsFragment).addToBackStack(null).commit();
-        getSupportActionBar().setTitle("Musics");
     }
 
     // endregion
@@ -323,7 +316,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     @Override
     public void onMusicDownloaded(String videoId, String title, String artist, int length) {
         ContentValues cvMusic = new ContentValues();
-
         cvMusic.put(MusicEntry.COLUMN_VIDEO_ID, videoId);
         cvMusic.put(MusicEntry.COLUMN_TITLE, title);
         cvMusic.put(MusicEntry.COLUMN_ARTIST, artist);
@@ -338,11 +330,20 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         this.database.insert(ConnectEntry.TABLE_NAME, null, cvConnect);
 
         this.playlistsFragment.swapCursor(getAllPlaylists());
-
         if (this.musicsFragment != null)
             this.musicsFragment.swapCursor(getAllMusic(this.musicsFragment.getPlaylistId()));
 
         Toast.makeText(this, "Downloaded", Toast.LENGTH_SHORT).show();
+    }
+
+    public void insertPlaylist(String name, String color) {
+        ContentValues cv = new ContentValues();
+        cv.put(PlaylistEntry.COLUMN_NAME, name);
+        cv.put(PlaylistEntry.COLUMN_COLOR, color);
+
+        this.database.insert(PlaylistEntry.TABLE_NAME, null, cv);
+
+        this.playlistsFragment.swapCursor(getAllPlaylists());
     }
 
     public void deleteMusicFromDatabase(Music music) {

@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -12,14 +13,16 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.fokakefir.musicplayer.R;
 import com.fokakefir.musicplayer.gui.activity.MainActivity;
+import com.fokakefir.musicplayer.gui.dialog.PlaylistDialog;
 import com.fokakefir.musicplayer.gui.recyclerview.PlaylistAdapter;
 import com.fokakefir.musicplayer.model.Playlist;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class PlaylistsFragment extends Fragment implements PlaylistAdapter.OnPlaylistListener {
+public class PlaylistsFragment extends Fragment implements PlaylistAdapter.OnPlaylistListener, View.OnClickListener, PlaylistDialog.OnPlaylistDialogListener {
 
     // region 0. Constants
 
@@ -35,7 +38,7 @@ public class PlaylistsFragment extends Fragment implements PlaylistAdapter.OnPla
     private PlaylistAdapter adapter;
     private RecyclerView.LayoutManager layoutManager;
 
-    private List<Playlist> playlistList;
+    private FloatingActionButton fabAddPlaylist;
 
     // endregion
 
@@ -55,6 +58,9 @@ public class PlaylistsFragment extends Fragment implements PlaylistAdapter.OnPla
         this.recyclerView.setLayoutManager(this.layoutManager);
         this.recyclerView.setAdapter(this.adapter);
 
+        this.fabAddPlaylist = this.view.findViewById(R.id.fab_add_playlist);
+        this.fabAddPlaylist.setOnClickListener(this);
+
         return this.view;
     }
 
@@ -69,10 +75,27 @@ public class PlaylistsFragment extends Fragment implements PlaylistAdapter.OnPla
 
     // endregion
 
+    // region 4. Floating Button listener
+
+    @Override
+    public void onClick(View view) {
+        if (view.getId() == R.id.fab_add_playlist) {
+            PlaylistDialog dialog = new PlaylistDialog(this);
+            dialog.show(this.activity.getSupportFragmentManager(), "playlist dialog");
+        }
+    }
+
+    // endregion
+
     // region 4. Database
 
     public void swapCursor(Cursor cursor) {
         this.adapter.swapCursor(cursor);
+    }
+
+    @Override
+    public void onPlaylistCreate(String name, String color) {
+        this.activity.insertPlaylist(name, color);
     }
 
     // endregion
