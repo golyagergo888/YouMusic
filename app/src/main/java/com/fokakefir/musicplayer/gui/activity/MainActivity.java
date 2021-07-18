@@ -42,16 +42,13 @@ import java.io.IOException;
 import at.huber.youtubeExtractor.YouTubeUriExtractor;
 import at.huber.youtubeExtractor.YtFile;
 
+import static com.fokakefir.musicplayer.logic.network.YoutubeAPI.YOUTUBE_ITAG_AUDIO_128K;
+
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, SlidingUpPanelLayout.PanelSlideListener, View.OnClickListener, MediaPlayer.OnCompletionListener, RequestDownloadMusicStreamResponse {
 
     // region 0. Constants
 
     private static final int READ_STORAGE_PERMISSION_REQUEST_CODE = 1;
-
-    private static final int YOUTUBE_ITAG_VIDEO_480P = 18;
-    private static final int YOUTUBE_ITAG_AUDIO_50K = 249;
-    private static final int YOUTUBE_ITAG_AUDIO_160K = 251;
-    private static final int YOUTUBE_ITAG_AUDIO_128K = 140;
 
     public static final int DEFAULT_PLAYLIST_ID = 1;
 

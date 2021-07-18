@@ -10,6 +10,11 @@ import retrofit2.http.Url;
 
 public class YoutubeAPI {
 
+    public static final int YOUTUBE_ITAG_VIDEO_480P = 18;
+    public static final int YOUTUBE_ITAG_AUDIO_50K = 249;
+    public static final int YOUTUBE_ITAG_AUDIO_160K = 251;
+    public static final int YOUTUBE_ITAG_AUDIO_128K = 140;
+
     public static final String BASE_URL = "https://www.googleapis.com/youtube/v3/";
     public static final String SEARCH = "search";
     public static final String KEY = "?key=AIzaSyBja95PvyW-AFi3T2a8fuua8wDXwUEdcu0";

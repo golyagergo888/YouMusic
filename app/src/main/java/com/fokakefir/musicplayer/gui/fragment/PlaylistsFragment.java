@@ -1,5 +1,7 @@
 package com.fokakefir.musicplayer.gui.fragment;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -81,7 +83,20 @@ public class PlaylistsFragment extends Fragment implements PlaylistAdapter.OnPla
 
     @Override
     public void onDeletePlaylistClick(int playlistId) {
-        this.activity.deletePlaylist(playlistId);
+        DialogInterface.OnClickListener dialogListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                if (i == DialogInterface.BUTTON_POSITIVE) {
+                    activity.deletePlaylist(playlistId);
+                }
+            }
+        };
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this.activity);
+        builder.setMessage("Are you sure?")
+                .setPositiveButton("Yes", dialogListener)
+                .setNegativeButton("No", dialogListener)
+                .show();
     }
 
     // endregion
