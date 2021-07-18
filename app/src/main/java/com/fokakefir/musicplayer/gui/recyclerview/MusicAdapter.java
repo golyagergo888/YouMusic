@@ -1,5 +1,6 @@
 package com.fokakefir.musicplayer.gui.recyclerview;
 
+import android.annotation.SuppressLint;
 import android.database.Cursor;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -51,6 +52,7 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
         return viewHolder;
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(@NonNull MusicAdapter.MusicViewHolder holder, int position) {
         if (!this.cursor.moveToPosition(position))
@@ -66,6 +68,7 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
 
         holder.txtTitle.setText(currentMusic.getTitle());
         holder.txtArtist.setText(currentMusic.getArtist());
+        holder.txtLength.setText((currentMusic.getLength() / 60) + ":" + (currentMusic.getLength() % 60));
         holder.music = currentMusic;
     }
 
@@ -95,9 +98,9 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
         private static final int MENU_ITEM_REMOVE_ID = 2;
         private static final int MENU_ITEM_DELETE_ID = 3;
 
-        public ImageView imgMusic;
         public TextView txtTitle;
         public TextView txtArtist;
+        public TextView txtLength;
 
         public Music music;
 
@@ -109,9 +112,10 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
             super(itemView);
 
             this.music = null;
-            this.imgMusic = itemView.findViewById(R.id.img_music);
+
             this.txtTitle = itemView.findViewById(R.id.txt_music_title);
             this.txtArtist = itemView.findViewById(R.id.txt_music_artist);
+            this.txtLength = itemView.findViewById(R.id.txt_music_length);
 
             this.itemView = itemView;
             this.itemView.setOnClickListener(this);

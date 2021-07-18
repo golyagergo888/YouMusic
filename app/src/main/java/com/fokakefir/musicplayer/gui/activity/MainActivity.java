@@ -20,6 +20,7 @@ import android.util.SparseArray;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.fokakefir.musicplayer.R;
@@ -71,6 +72,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     private MusicPlayer musicPlayer;
 
+    private TextView txtMusicTitle;
+    private TextView txtMusicArtist;
     private ImageButton btnPlay;
 
     // endregion
@@ -92,7 +95,11 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
         this.bottomNav = findViewById(R.id.bottom_navigation);
         this.layout = findViewById(R.id.sliding_up_panel);
+        this.txtMusicTitle = findViewById(R.id.txt_music_title_down);
+        this.txtMusicArtist = findViewById(R.id.txt_music_artist_down);
         this.btnPlay = findViewById(R.id.btn_play_music);
+
+        this.txtMusicTitle.setSelected(true);
 
         this.bottomNav.setOnNavigationItemSelectedListener(this);
         getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, this.searchFragment).commit();
@@ -232,6 +239,9 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         this.musicPlayer.setMusics(getMusics(playlistId));
 
         this.musicPlayer.playMusicUri(uri);
+
+        this.txtMusicTitle.setText(music.getTitle());
+        this.txtMusicArtist.setText(music.getArtist());
     }
 
     // endregion
