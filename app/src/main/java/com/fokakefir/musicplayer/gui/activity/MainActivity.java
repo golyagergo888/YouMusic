@@ -10,8 +10,6 @@ import android.content.ContentValues;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.media.AudioAttributes;
-import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -25,6 +23,7 @@ import android.widget.Toast;
 
 import com.fokakefir.musicplayer.R;
 import com.fokakefir.musicplayer.gui.fragment.ChoosePlaylistFragment;
+import com.fokakefir.musicplayer.logic.database.MusicPlayerContract;
 import com.fokakefir.musicplayer.logic.database.MusicPlayerContract.*;
 import com.fokakefir.musicplayer.logic.background.RequestDownloadMusicStream;
 import com.fokakefir.musicplayer.logic.background.RequestDownloadThumbnailStream;
@@ -39,12 +38,12 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import at.huber.youtubeExtractor.YouTubeUriExtractor;
 import at.huber.youtubeExtractor.YtFile;
+import de.hdodenhof.circleimageview.CircleImageView;
 
 import static com.fokakefir.musicplayer.logic.network.YoutubeAPI.YOUTUBE_ITAG_AUDIO_128K;
 
@@ -72,9 +71,15 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     private MusicPlayer musicPlayer;
 
-    private TextView txtMusicTitle;
-    private TextView txtMusicArtist;
-    private ImageButton btnPlay;
+    private TextView txtMusicTitleDown;
+    private TextView txtMusicArtistDown;
+    private ImageButton btnPlayDown;
+
+    private TextView txtMusicTitleUp;
+    private TextView txtMusicArtistUp;
+    private CircleImageView btnPlayUp;
+    private ImageButton btnPrevious;
+    private ImageButton btnNext;
 
     // endregion
 
@@ -95,11 +100,17 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
         this.bottomNav = findViewById(R.id.bottom_navigation);
         this.layout = findViewById(R.id.sliding_up_panel);
-        this.txtMusicTitle = findViewById(R.id.txt_music_title_down);
-        this.txtMusicArtist = findViewById(R.id.txt_music_artist_down);
-        this.btnPlay = findViewById(R.id.btn_play_music);
+        this.txtMusicTitleDown = findViewById(R.id.txt_music_title_down);
+        this.txtMusicArtistDown = findViewById(R.id.txt_music_artist_down);
+        this.btnPlayDown = findViewById(R.id.btn_play_music_down);
+        this.txtMusicTitleUp = findViewById(R.id.txt_music_title_up);
+        this.txtMusicArtistUp = findViewById(R.id.txt_music_artist_up);
+        this.btnPlayUp = findViewById(R.id.btn_play_music_up);
+        this.btnPrevious = findViewById(R.id.btn_previous_music);
+        this.btnNext = findViewById(R.id.btn_next_music);
 
-        this.txtMusicTitle.setSelected(true);
+        this.txtMusicTitleDown.setSelected(true);
+        this.txtMusicTitleUp.setSelected(true);
 
         this.bottomNav.setOnNavigationItemSelectedListener(this);
         getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, this.searchFragment).commit();
@@ -107,8 +118,12 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
         this.musicPlayer = new MusicPlayer(this);
 
-        this.btnPlay.setImageResource(R.drawable.ic_baseline_play_music);
-        this.btnPlay.setOnClickListener(this);
+        this.btnPlayDown.setImageResource(R.drawable.ic_baseline_play_music);
+        this.btnPlayUp.setImageResource(R.drawable.ic_baseline_play_music);
+        this.btnPlayDown.setOnClickListener(this);
+        this.btnPlayUp.setOnClickListener(this);
+        this.btnPrevious.setOnClickListener(this);
+        this.btnNext.setOnClickListener(this);
 
         this.layout.addPanelSlideListener(this);
 
@@ -214,13 +229,21 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     @Override
     public void onClick(View view) {
-        if (view.getId() == R.id.btn_play_music) {
+        if (view.getId() == R.id.btn_play_music_down || view.getId() == R.id.btn_play_music_up) {
             if (this.musicPlayer.isPlayable()) {
                 if (this.musicPlayer.isPlaying()) {
                     this.musicPlayer.pauseMusic();
                 } else {
                     this.musicPlayer.playMusic();
                 }
+            }
+        } else if (view.getId() == R.id.btn_previous_music) {
+            if (this.musicPlayer.isPlayable()) {
+                this.musicPlayer.previousMusic();
+            }
+        } else if (view.getId() == R.id.btn_next_music) {
+            if (this.musicPlayer.isPlayable()) {
+                this.musicPlayer.nextMusic();
             }
         }
     }
@@ -239,9 +262,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         this.musicPlayer.setMusics(getMusics(playlistId));
 
         this.musicPlayer.playMusicUri(uri);
-
-        this.txtMusicTitle.setText(music.getTitle());
-        this.txtMusicArtist.setText(music.getArtist());
     }
 
     // endregion
@@ -467,14 +487,33 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         List<Music> musics = new ArrayList<>();
 
         Cursor cursor = getAllMusic(playlistId);
-
-        // TODO get musics
+        if (cursor.moveToFirst()) {
+            do {
+                Music currentMusic = new Music(
+                        cursor.getInt(cursor.getColumnIndex(MusicPlayerContract.MusicEntry._ID)),
+                        cursor.getString(cursor.getColumnIndex(MusicPlayerContract.MusicEntry.COLUMN_VIDEO_ID)),
+                        cursor.getString(cursor.getColumnIndex(MusicPlayerContract.MusicEntry.COLUMN_TITLE)),
+                        cursor.getString(cursor.getColumnIndex(MusicPlayerContract.MusicEntry.COLUMN_ARTIST)),
+                        cursor.getInt(cursor.getColumnIndex(MusicPlayerContract.MusicEntry.COLUMN_LENGTH))
+                );
+                musics.add(currentMusic);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
 
         return musics;
     }
 
     public void setBtnPlayImage(int resId) {
-        this.btnPlay.setImageResource(resId);
+        this.btnPlayDown.setImageResource(resId);
+        this.btnPlayUp.setImageResource(resId);
+    }
+
+    public void setMusicTexts(String title, String artist) {
+        this.txtMusicTitleDown.setText(title);
+        this.txtMusicArtistDown.setText(artist);
+        this.txtMusicTitleUp.setText(title);
+        this.txtMusicArtistUp.setText(artist);
     }
 
     // endregion

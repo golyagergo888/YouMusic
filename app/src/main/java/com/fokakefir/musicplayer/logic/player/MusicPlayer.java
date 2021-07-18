@@ -3,12 +3,14 @@ package com.fokakefir.musicplayer.logic.player;
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Environment;
 
 import com.fokakefir.musicplayer.R;
 import com.fokakefir.musicplayer.gui.activity.MainActivity;
 import com.fokakefir.musicplayer.model.Music;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 public class MusicPlayer implements MediaPlayer.OnCompletionListener {
@@ -26,6 +28,7 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
     private Music currentMusic;
     private List<Music> musics;
     private boolean shuffle;
+    private boolean repeat;
 
     // endregion
 
@@ -34,6 +37,7 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
     public MusicPlayer(MainActivity activity) {
         this.activity = activity;
         this.shuffle = false;
+        this.repeat = false;
     }
 
     // endregion
@@ -61,6 +65,7 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
             this.mediaPlayer.start();
 
             this.activity.setBtnPlayImage(R.drawable.ic_baseline_pause_music);
+            this.activity.setMusicTexts(this.currentMusic.getTitle(), this.currentMusic.getArtist());
         } catch (IOException e) {
             e.printStackTrace();
             this.mediaPlayer = null;
@@ -81,6 +86,34 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
         }
     }
 
+    public void previousMusic() {
+        if (this.currentMusic != null) {
+            int position = getCurrentMusicPosition() - 1;
+            if (position >= 0) {
+                this.currentMusic = this.musics.get(position);
+                Uri uri = Uri.parse(
+                        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) +
+                                "/YoutubeMusics/" + this.currentMusic.getVideoId() + ".m4a"
+                );
+                this.playMusicUri(uri);
+            }
+        }
+    }
+
+    public void nextMusic() {
+        if (this.currentMusic != null) {
+            int position = getCurrentMusicPosition() + 1;
+            if (position < this.musics.size()) {
+                this.currentMusic = this.musics.get(position);
+                Uri uri = Uri.parse(
+                        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) +
+                                "/YoutubeMusics/" + this.currentMusic.getVideoId() + ".m4a"
+                );
+                this.playMusicUri(uri);
+            }
+        }
+    }
+
     public void stopMediaPlayer() {
         if (this.mediaPlayer != null) {
             this.mediaPlayer.release();
@@ -92,19 +125,31 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
 
     @Override
     public void onCompletion(MediaPlayer mediaPlayer) {
-        // TODO set next music
-        stopMediaPlayer();
+        if (getCurrentMusicPosition() < this.musics.size() - 1) {
+            nextMusic();
+        } else {
+            if (!this.repeat) {
+                stopMediaPlayer();
+            } else {
+                // TODO first music
+            }
+        }
     }
 
     // endregion
 
     // region 4. Getters and Setters
 
+    private int getCurrentMusicPosition() {
+        for (int ind = 0; ind < musics.size(); ind++) {
+            if (this.currentMusic.getId() == this.musics.get(ind).getId())
+                return ind;
+        }
+        return -1;
+    }
+
     public boolean isPlayable() {
-        if (this.mediaPlayer != null)
-            return true;
-        else
-            return false;
+        return (this.mediaPlayer != null);
     }
 
     public boolean isPlaying() {
@@ -117,10 +162,17 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
 
     public void setMusics(List<Music> musics) {
         this.musics = musics;
+        if (this.shuffle) {
+            Collections.shuffle(musics);
+        }
     }
 
     public void setShuffle(boolean shuffle) {
         this.shuffle = shuffle;
+    }
+
+    public void setRepeat(boolean repeat) {
+        this.repeat = repeat;
     }
 
     // endregion
