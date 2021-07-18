@@ -32,19 +32,22 @@ import com.fokakefir.musicplayer.gui.fragment.PlaylistsFragment;
 import com.fokakefir.musicplayer.gui.fragment.SearchFragment;
 import com.fokakefir.musicplayer.logic.background.RequestDownloadMusicStreamResponse;
 import com.fokakefir.musicplayer.logic.database.MusicPlayerDBHelper;
+import com.fokakefir.musicplayer.logic.player.MusicPlayer;
 import com.fokakefir.musicplayer.model.Music;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import at.huber.youtubeExtractor.YouTubeUriExtractor;
 import at.huber.youtubeExtractor.YtFile;
 
 import static com.fokakefir.musicplayer.logic.network.YoutubeAPI.YOUTUBE_ITAG_AUDIO_128K;
 
-public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, SlidingUpPanelLayout.PanelSlideListener, View.OnClickListener, MediaPlayer.OnCompletionListener, RequestDownloadMusicStreamResponse {
+public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, SlidingUpPanelLayout.PanelSlideListener, View.OnClickListener, RequestDownloadMusicStreamResponse {
 
     // region 0. Constants
 
@@ -66,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     private BottomNavigationView bottomNav;
     private SlidingUpPanelLayout layout;
 
-    private MediaPlayer mediaPlayer;
+    private MusicPlayer musicPlayer;
 
     private ImageButton btnPlay;
 
@@ -95,6 +98,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, this.searchFragment).commit();
         getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, this.playlistsFragment).hide(this.playlistsFragment).commit();
 
+        this.musicPlayer = new MusicPlayer(this);
+
         this.btnPlay.setImageResource(R.drawable.ic_baseline_play_music);
         this.btnPlay.setOnClickListener(this);
 
@@ -112,7 +117,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     @Override
     public void onStop() {
         super.onStop();
-        stopMediaPlayer();
+        this.musicPlayer.stopMediaPlayer();
     }
 
     @Override
@@ -203,11 +208,11 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     @Override
     public void onClick(View view) {
         if (view.getId() == R.id.btn_play_music) {
-            if (this.mediaPlayer != null) {
-                if (this.mediaPlayer.isPlaying()) {
-                    pauseMusic();
+            if (this.musicPlayer.isPlayable()) {
+                if (this.musicPlayer.isPlaying()) {
+                    this.musicPlayer.pauseMusic();
                 } else {
-                    playMusic();
+                    this.musicPlayer.playMusic();
                 }
             }
         }
@@ -215,64 +220,18 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     // endregion
 
-    // region 5. MediaPlayer
+    // region 5. MusicPlayer
 
-    public void playMusicUri(Uri uri) {
-        //Uri uri = Uri.parse(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)+"/YoutubeMusics/" + name);
-        if (this.mediaPlayer == null) {
-            this.mediaPlayer = new MediaPlayer();
-            this.mediaPlayer.setAudioAttributes(
-                    new AudioAttributes.Builder()
-                            .setUsage(AudioAttributes.USAGE_MEDIA)
-                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                            .build()
-            );
-            this.mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                @Override
-                public void onCompletion(MediaPlayer mediaPlayer) {
-                    stopMediaPlayer();
-                }
-            });
-        }
+    public void playMusic(Music music, int playlistId) {
+        Uri uri = Uri.parse(
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) +
+                        "/YoutubeMusics/" + music.getVideoId() + ".m4a"
+        );
 
-        try {
-            this.mediaPlayer.setDataSource(this, uri);
-            this.mediaPlayer.prepare();
-            this.mediaPlayer.start();
+        this.musicPlayer.setCurrentMusic(music);
+        this.musicPlayer.setMusics(getMusics(playlistId));
 
-            this.btnPlay.setImageResource(R.drawable.ic_baseline_pause_music);
-        } catch (IOException e) {
-            e.printStackTrace();
-            this.mediaPlayer = null;
-        }
-    }
-
-    public void playMusic() {
-        if (this.mediaPlayer != null) {
-            this.mediaPlayer.start();
-            this.btnPlay.setImageResource(R.drawable.ic_baseline_pause_music);
-        }
-    }
-
-    public void pauseMusic() {
-        if (this.mediaPlayer != null) {
-            this.mediaPlayer.pause();
-            this.btnPlay.setImageResource(R.drawable.ic_baseline_play_music);
-        }
-    }
-
-    public void stopMediaPlayer() {
-        if (this.mediaPlayer != null) {
-            this.mediaPlayer.release();;
-            this.mediaPlayer = null;
-
-            this.btnPlay.setImageResource(R.drawable.ic_baseline_play_music);
-        }
-    }
-
-    @Override
-    public void onCompletion(MediaPlayer mediaPlayer) {
-        stopMediaPlayer();
+        this.musicPlayer.playMusicUri(uri);
     }
 
     // endregion
@@ -492,6 +451,20 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 SQL_SELECT_ALL_MUSIC,
                 new String[]{String.valueOf(playlistId)}
         );
+    }
+
+    public List<Music> getMusics(int playlistId) {
+        List<Music> musics = new ArrayList<>();
+
+        Cursor cursor = getAllMusic(playlistId);
+
+        // TODO get musics
+
+        return musics;
+    }
+
+    public void setBtnPlayImage(int resId) {
+        this.btnPlay.setImageResource(resId);
     }
 
     // endregion

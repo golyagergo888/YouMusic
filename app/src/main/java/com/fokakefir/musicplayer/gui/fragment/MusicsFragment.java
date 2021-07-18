@@ -76,7 +76,7 @@ public class MusicsFragment extends Fragment implements MusicAdapter.OnMusicList
 
     @Override
     public void onMusicClick(Music music) {
-        Toast.makeText(this.activity, music.getTitle() + " id: " + music.getId(), Toast.LENGTH_SHORT).show();
+        this.activity.playMusic(music, this.playlistId);
     }
 
     @Override
