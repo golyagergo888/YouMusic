@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.pm.PackageManager;
@@ -14,10 +15,12 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.util.SparseArray;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -47,7 +50,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 import static com.fokakefir.musicplayer.logic.network.YoutubeAPI.YOUTUBE_ITAG_AUDIO_128K;
 
-public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, SlidingUpPanelLayout.PanelSlideListener, View.OnClickListener, RequestDownloadMusicStreamResponse {
+public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, SlidingUpPanelLayout.PanelSlideListener, View.OnClickListener, RequestDownloadMusicStreamResponse, Runnable, SeekBar.OnSeekBarChangeListener {
 
     // region 0. Constants
 
@@ -77,9 +80,16 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     private TextView txtMusicTitleUp;
     private TextView txtMusicArtistUp;
+    private TextView txtCurrentTime;
+    private TextView txtFinalTime;
+    private SeekBar seekBar;
     private CircleImageView btnPlayUp;
     private ImageButton btnPrevious;
     private ImageButton btnNext;
+
+    private boolean slidingSeekBar;
+
+    private Handler handler;
 
     // endregion
 
@@ -100,11 +110,16 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
         this.bottomNav = findViewById(R.id.bottom_navigation);
         this.layout = findViewById(R.id.sliding_up_panel);
+
         this.txtMusicTitleDown = findViewById(R.id.txt_music_title_down);
         this.txtMusicArtistDown = findViewById(R.id.txt_music_artist_down);
         this.btnPlayDown = findViewById(R.id.btn_play_music_down);
+
         this.txtMusicTitleUp = findViewById(R.id.txt_music_title_up);
         this.txtMusicArtistUp = findViewById(R.id.txt_music_artist_up);
+        this.txtCurrentTime = findViewById(R.id.txt_current_time);
+        this.txtFinalTime = findViewById(R.id.txt_final_time);
+        this.seekBar = findViewById(R.id.seek_bar);
         this.btnPlayUp = findViewById(R.id.btn_play_music_up);
         this.btnPrevious = findViewById(R.id.btn_previous_music);
         this.btnNext = findViewById(R.id.btn_next_music);
@@ -126,6 +141,11 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         this.btnNext.setOnClickListener(this);
 
         this.layout.addPanelSlideListener(this);
+
+        this.seekBar.setOnSeekBarChangeListener(this);
+        this.handler = new Handler();
+        runOnUiThread(this);
+        this.slidingSeekBar = false;
 
         if (!checkPermissionForReadExternalStorage()) {
             try {
@@ -240,10 +260,12 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         } else if (view.getId() == R.id.btn_previous_music) {
             if (this.musicPlayer.isPlayable()) {
                 this.musicPlayer.previousMusic();
+                this.seekBar.setProgress(0);
             }
         } else if (view.getId() == R.id.btn_next_music) {
             if (this.musicPlayer.isPlayable()) {
                 this.musicPlayer.nextMusic();
+                this.seekBar.setProgress(0);
             }
         }
     }
@@ -262,6 +284,56 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         this.musicPlayer.setMusics(getMusics(playlistId));
 
         this.musicPlayer.playMusicUri(uri);
+    }
+
+    @SuppressLint("SetTextI18n")
+    @Override
+    public void run() {
+        if (this.musicPlayer.isPlayable() && !this.slidingSeekBar) {
+            int position = this.musicPlayer.getTimePosition();
+            this.seekBar.setProgress(position);
+            int minute = position / 60;
+            int second = position % 60;
+            String strMinute = String.valueOf(minute);
+            String strSecond;
+            if (second < 10)
+                strSecond = "0" + second;
+            else
+                strSecond = String.valueOf(second);
+
+            this.txtCurrentTime.setText(strMinute+ ":" + strSecond);
+        }
+        this.handler.postDelayed(this, 1000);
+    }
+
+    @SuppressLint("SetTextI18n")
+    @Override
+    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        if (this.musicPlayer.isPlayable() && fromUser) {
+            int minute = progress / 60;
+            int second = progress % 60;
+            String strMinute = String.valueOf(minute);
+            String strSecond;
+            if (second < 10)
+                strSecond = "0" + second;
+            else
+                strSecond = String.valueOf(second);
+
+            this.txtCurrentTime.setText(strMinute+ ":" + strSecond);
+        }
+    }
+
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {
+        this.slidingSeekBar = true;
+    }
+
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {
+        this.slidingSeekBar = false;
+        if (this.musicPlayer.isPlayable()) {
+            this.musicPlayer.setProgress(seekBar.getProgress());
+        }
     }
 
     // endregion
@@ -514,6 +586,23 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         this.txtMusicArtistDown.setText(artist);
         this.txtMusicTitleUp.setText(title);
         this.txtMusicArtistUp.setText(artist);
+    }
+
+    @SuppressLint("SetTextI18n")
+    public void setMusicSeekBar(int length) {
+        this.seekBar.setMax(length);
+        this.txtCurrentTime.setText("0:00");
+
+        int minute = length / 60;
+        int second = length % 60;
+        String strMinute = String.valueOf(minute);
+        String strSecond;
+        if (second < 10)
+            strSecond = "0" + second;
+        else
+            strSecond = String.valueOf(second);
+
+        this.txtFinalTime.setText(strMinute+ ":" + strSecond);
     }
 
     // endregion

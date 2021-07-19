@@ -4,6 +4,7 @@ import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Environment;
+import android.widget.Toast;
 
 import com.fokakefir.musicplayer.R;
 import com.fokakefir.musicplayer.gui.activity.MainActivity;
@@ -66,10 +67,12 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
 
             this.activity.setBtnPlayImage(R.drawable.ic_baseline_pause_music);
             this.activity.setMusicTexts(this.currentMusic.getTitle(), this.currentMusic.getArtist());
+            this.activity.setMusicSeekBar(this.currentMusic.getLength());
         } catch (IOException e) {
             e.printStackTrace();
             this.mediaPlayer = null;
         }
+
     }
 
     public void playMusic() {
@@ -148,6 +151,13 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
         return -1;
     }
 
+    public int getTimePosition() {
+        if (this.mediaPlayer != null) {
+            return this.mediaPlayer.getCurrentPosition() / 1000;
+        }
+        return 0;
+    }
+
     public boolean isPlayable() {
         return (this.mediaPlayer != null);
     }
@@ -173,6 +183,12 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
 
     public void setRepeat(boolean repeat) {
         this.repeat = repeat;
+    }
+
+    public void setProgress(int progress) {
+        if (this.mediaPlayer != null) {
+            this.mediaPlayer.seekTo(progress * 1000);
+        }
     }
 
     // endregion

@@ -69,7 +69,9 @@
             <SeekBar
                 android:id="@+id/seek_bar"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:thumbTint="@color/primaryDarkRed"
+                android:progressTint="@color/primaryRed" />
 
             <TextView
                 android:id="@+id/txt_current_time"
@@ -104,12 +106,13 @@
 
             <ImageButton
                 android:id="@+id/btn_previous_music"
-                android:layout_width="60dp"
-                android:layout_height="60dp"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
                 android:layout_centerVertical="true"
                 android:src="@drawable/ic_baseline_previous_24"
                 android:background="@android:color/white"
-                android:tint="@color/primaryRed" />
+                android:tint="@color/primaryRed"
+                android:scaleType="fitCenter" />
 
             <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/btn_play_music_up"
@@ -117,19 +120,22 @@
                 android:layout_height="50dp"
                 android:layout_toEndOf="@id/btn_previous_music"
                 android:layout_centerVertical="true"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
                 android:src="@drawable/ic_baseline_play_music"
                 app:civ_circle_background_color="@color/primaryRed"
                 android:clickable="true"/>
 
             <ImageButton
                 android:id="@+id/btn_next_music"
-                android:layout_width="60dp"
-                android:layout_height="60dp"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
                 android:layout_toEndOf="@id/btn_play_music_up"
                 android:layout_centerVertical="true"
                 android:src="@drawable/ic_baseline_next_24"
                 android:background="@android:color/white"
-                android:tint="@color/primaryRed" />
+                android:tint="@color/primaryRed"
+                android:scaleType="fitCenter"/>
 
         </RelativeLayout>
 
