@@ -11,6 +11,8 @@ import com.fokakefir.musicplayer.gui.activity.MainActivity;
 import com.fokakefir.musicplayer.model.Music;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -18,16 +20,23 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
 
     // region 0. Constants
 
+    public static final String CURRENT_MUSIC = "current music";
+    public static final String MUSICS = "musics";
+    public static final String SHUFFLE = "shuffle";
+    public static final String REPEAT = "repeat";
+    public static final String PROGRESS = "progress";
+
     // endregion
 
     // region 1. Decl and Init
 
     private MainActivity activity;
+    private MusicPlayerService service;
 
     private MediaPlayer mediaPlayer;
 
     private Music currentMusic;
-    private List<Music> musics;
+    private ArrayList<Music> musics;
     private boolean shuffle;
     private boolean repeat;
 
@@ -37,6 +46,12 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
 
     public MusicPlayer(MainActivity activity) {
         this.activity = activity;
+        this.shuffle = false;
+        this.repeat = false;
+    }
+
+    public MusicPlayer(MusicPlayerService service) {
+        this.service = service;
         this.shuffle = false;
         this.repeat = false;
     }
@@ -61,13 +76,19 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
         }
 
         try {
-            this.mediaPlayer.setDataSource(this.activity, uri);
-            this.mediaPlayer.prepare();
-            this.mediaPlayer.start();
+            if (this.activity != null) {
+                this.mediaPlayer.setDataSource(this.activity, uri);
+                this.mediaPlayer.prepare();
+                this.mediaPlayer.start();
 
-            this.activity.setBtnPlayImage(R.drawable.ic_baseline_pause_music);
-            this.activity.setMusicTexts(this.currentMusic.getTitle(), this.currentMusic.getArtist());
-            this.activity.setMusicSeekBar(this.currentMusic.getLength());
+                this.activity.setBtnPlayImage(R.drawable.ic_baseline_pause_music);
+                this.activity.setMusicTexts(this.currentMusic.getTitle(), this.currentMusic.getArtist());
+                this.activity.setMusicSeekBar(this.currentMusic.getLength());
+            } else {
+                this.mediaPlayer.setDataSource(this.service, uri);
+                this.mediaPlayer.prepare();
+                this.mediaPlayer.start();
+            }
         } catch (IOException e) {
             e.printStackTrace();
             this.mediaPlayer = null;
@@ -78,14 +99,16 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
     public void playMusic() {
         if (this.mediaPlayer != null) {
             this.mediaPlayer.start();
-            this.activity.setBtnPlayImage(R.drawable.ic_baseline_pause_music);
+            if (this.activity != null)
+                this.activity.setBtnPlayImage(R.drawable.ic_baseline_pause_music);
         }
     }
 
     public void pauseMusic() {
         if (this.mediaPlayer != null) {
             this.mediaPlayer.pause();
-            this.activity.setBtnPlayImage(R.drawable.ic_baseline_play_music);
+            if (this.activity != null)
+                this.activity.setBtnPlayImage(R.drawable.ic_baseline_play_music);
         }
     }
 
@@ -122,7 +145,8 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
             this.mediaPlayer.release();
             this.mediaPlayer = null;
 
-            this.activity.setBtnPlayImage(R.drawable.ic_baseline_play_music);
+            if (this.activity != null)
+                this.activity.setBtnPlayImage(R.drawable.ic_baseline_play_music);
         }
     }
 
@@ -158,6 +182,22 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
         return 0;
     }
 
+    public Music getCurrentMusic() {
+        return currentMusic;
+    }
+
+    public ArrayList<Music> getMusics() {
+        return musics;
+    }
+
+    public boolean isShuffle() {
+        return shuffle;
+    }
+
+    public boolean isRepeat() {
+        return repeat;
+    }
+
     public boolean isPlayable() {
         return (this.mediaPlayer != null);
     }
@@ -170,7 +210,7 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
         this.currentMusic = currentMusic;
     }
 
-    public void setMusics(List<Music> musics) {
+    public void setMusics(ArrayList<Music> musics) {
         this.musics = musics;
     }
 
@@ -184,7 +224,7 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
 
     public void setProgress(int progress) {
         if (this.mediaPlayer != null) {
-            this.mediaPlayer.seekTo(progress * 1000);
+            this.mediaPlayer.seekTo(progress * 1000, MediaPlayer.SEEK_CLOSEST);
         }
     }
 

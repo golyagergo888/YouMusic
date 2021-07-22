@@ -1,6 +1,9 @@
 package com.fokakefir.musicplayer.model;
 
-public class Music {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class Music implements Parcelable {
 
     private int id;
     private String videoId;
@@ -17,6 +20,40 @@ public class Music {
         this.title = title;
         this.artist = artist;
         this.length = length;
+    }
+
+    protected Music(Parcel in) {
+        this.id = in.readInt();
+        this.videoId = in.readString();
+        this.title = in.readString();
+        this.artist = in.readString();
+        this.length = in.readInt();
+    }
+
+    public static final Creator<Music> CREATOR = new Creator<Music>() {
+        @Override
+        public Music createFromParcel(Parcel in) {
+            return new Music(in);
+        }
+
+        @Override
+        public Music[] newArray(int size) {
+            return new Music[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int flags) {
+        parcel.writeInt(this.id);
+        parcel.writeString(this.videoId);
+        parcel.writeString(this.title);
+        parcel.writeString(this.artist);
+        parcel.writeInt(this.length);
     }
 
     public int getId() {

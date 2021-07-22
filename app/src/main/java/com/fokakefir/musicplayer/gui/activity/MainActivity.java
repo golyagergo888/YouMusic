@@ -3,12 +3,16 @@ package com.fokakefir.musicplayer.gui.activity;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -37,13 +41,13 @@ import com.fokakefir.musicplayer.gui.fragment.SearchFragment;
 import com.fokakefir.musicplayer.logic.background.RequestDownloadMusicStreamResponse;
 import com.fokakefir.musicplayer.logic.database.MusicPlayerDBHelper;
 import com.fokakefir.musicplayer.logic.player.MusicPlayer;
+import com.fokakefir.musicplayer.logic.player.MusicPlayerService;
 import com.fokakefir.musicplayer.model.Music;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 
 import at.huber.youtubeExtractor.YouTubeUriExtractor;
 import at.huber.youtubeExtractor.YtFile;
@@ -160,8 +164,42 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     @Override
     public void onStop() {
         super.onStop();
-        this.musicPlayer.stopMediaPlayer();
-        // TODO set intent
+        if (this.musicPlayer.isPlayable() && this.musicPlayer.isPlaying()) {
+            Intent intent = new Intent(MainActivity.this, MusicPlayerService.class);
+            intent.putExtra(MusicPlayer.CURRENT_MUSIC, this.musicPlayer.getCurrentMusic());
+            intent.putParcelableArrayListExtra(MusicPlayer.MUSICS, this.musicPlayer.getMusics());
+            intent.putExtra(MusicPlayer.SHUFFLE, this.musicPlayer.isShuffle());
+            intent.putExtra(MusicPlayer.REPEAT, this.musicPlayer.isRepeat());
+            intent.putExtra(MusicPlayer.PROGRESS, this.musicPlayer.getTimePosition());
+
+            this.musicPlayer.stopMediaPlayer();
+
+            startService(intent);
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        try {
+            Intent stopServiceIntent = new Intent(MainActivity.this, MusicPlayerService.class);
+            stopService(stopServiceIntent);
+            LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    Bundle bundle = intent.getExtras();
+
+                    musicPlayer.setCurrentMusic(bundle.getParcelable(MusicPlayer.CURRENT_MUSIC));
+                    Uri uri = Uri.parse(
+                            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) +
+                                    "/YoutubeMusics/" + musicPlayer.getCurrentMusic().getVideoId() + ".m4a"
+                    );
+                    musicPlayer.playMusicUri(uri);
+                    musicPlayer.setProgress(bundle.getInt(MusicPlayer.PROGRESS));
+                }
+            }, new IntentFilter("data"));
+
+        } catch (Exception e) {}
     }
 
     @Override
@@ -557,8 +595,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         );
     }
 
-    public List<Music> getMusics(int playlistId) {
-        List<Music> musics = new ArrayList<>();
+    public ArrayList<Music> getMusics(int playlistId) {
+        ArrayList<Music> musics = new ArrayList<>();
 
         Cursor cursor = getAllMusic(playlistId);
         if (cursor.moveToFirst()) {
