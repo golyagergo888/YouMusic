@@ -8,6 +8,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ContentValues;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -160,6 +161,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     public void onStop() {
         super.onStop();
         this.musicPlayer.stopMediaPlayer();
+        // TODO set intent
     }
 
     @Override

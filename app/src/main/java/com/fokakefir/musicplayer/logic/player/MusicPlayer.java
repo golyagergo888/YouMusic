@@ -172,9 +172,6 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
 
     public void setMusics(List<Music> musics) {
         this.musics = musics;
-        if (this.shuffle) {
-            Collections.shuffle(musics);
-        }
     }
 
     public void setShuffle(boolean shuffle) {
