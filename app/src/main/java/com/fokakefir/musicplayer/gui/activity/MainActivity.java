@@ -61,6 +61,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     public static final int DEFAULT_PLAYLIST_ID = 1;
 
+    public static final String AUDIO_FORMAT = ".m4a";
+
     public static final String INTENT_FILTER_ACTIVITY = "data_activity";
 
     public static final String INTENT_TYPE_PLAY_URI = "play_uri";
@@ -336,7 +338,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     public void playMusic(Music music, int playlistId) {
         String strUri = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) +
-                "/YoutubeMusics/" + music.getVideoId() + ".m4a";
+                "/YoutubeMusics/" + music.getVideoId() + MainActivity.AUDIO_FORMAT;
 
         Intent intent = new Intent(INTENT_FILTER_ACTIVITY);
         intent.putExtra(TYPE, INTENT_TYPE_PLAY_URI);
@@ -430,7 +432,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     public void deleteMusicFromStorage(Music music) {
         File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)+"/YoutubeMusics");
-        File file = new File(dir, music.getVideoId() + ".m4a");
+        File file = new File(dir, music.getVideoId() + MainActivity.AUDIO_FORMAT);
         boolean deleted = file.delete();
 
         if (deleted)

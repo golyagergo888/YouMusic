@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Environment;
 
 import com.fokakefir.musicplayer.R;
+import com.fokakefir.musicplayer.gui.activity.MainActivity;
 import com.fokakefir.musicplayer.model.Music;
 
 import java.io.IOException;
@@ -97,7 +98,7 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
                 this.currentMusic = this.musics.get(position);
                 Uri uri = Uri.parse(
                         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) +
-                                "/YoutubeMusics/" + this.currentMusic.getVideoId() + ".m4a"
+                                "/YoutubeMusics/" + this.currentMusic.getVideoId() + MainActivity.AUDIO_FORMAT
                 );
                 this.playMusicUri(uri);
             }
@@ -111,7 +112,7 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
                 this.currentMusic = this.musics.get(position);
                 Uri uri = Uri.parse(
                         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) +
-                                "/YoutubeMusics/" + this.currentMusic.getVideoId() + ".m4a"
+                                "/YoutubeMusics/" + this.currentMusic.getVideoId() + MainActivity.AUDIO_FORMAT
                 );
                 this.playMusicUri(uri);
             }

@@ -6,6 +6,8 @@ import android.media.MediaMetadataRetriever;
 import android.os.AsyncTask;
 import android.os.Environment;
 
+import com.fokakefir.musicplayer.gui.activity.MainActivity;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -58,7 +60,7 @@ public class RequestDownloadMusicStream extends AsyncTask<String, String, String
             urlConnection.connect();
             int size = urlConnection.getContentLength();
 
-            String fileName = params[1] + ".m4a";
+            String fileName = params[1] + MainActivity.AUDIO_FORMAT;
             String storagePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)+"/YoutubeMusics";
             File f = new File(storagePath);
             if (!f.exists()) {
@@ -118,7 +120,7 @@ public class RequestDownloadMusicStream extends AsyncTask<String, String, String
     }
 
     private int getDuration(String videoId) {
-        String fileName = videoId + ".m4a";
+        String fileName = videoId + MainActivity.AUDIO_FORMAT;
         String storagePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)+"/YoutubeMusics";
 
         String path = storagePath + "/" + fileName;
