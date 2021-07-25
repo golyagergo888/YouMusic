@@ -4,34 +4,20 @@ import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Environment;
-import android.widget.Toast;
 
 import com.fokakefir.musicplayer.R;
-import com.fokakefir.musicplayer.gui.activity.MainActivity;
 import com.fokakefir.musicplayer.model.Music;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 public class MusicPlayer implements MediaPlayer.OnCompletionListener {
 
-    // region 0. Constants
-
-    public static final String CURRENT_MUSIC = "current music";
-    public static final String MUSICS = "musics";
-    public static final String SHUFFLE = "shuffle";
-    public static final String REPEAT = "repeat";
-    public static final String PROGRESS = "progress";
-
-    // endregion
 
     // region 1. Decl and Init
 
-    private MainActivity activity;
     private MusicPlayerService service;
+    private MusicPlayerListener listener;
 
     private MediaPlayer mediaPlayer;
 
@@ -44,14 +30,9 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
 
     // region 2. Constructor
 
-    public MusicPlayer(MainActivity activity) {
-        this.activity = activity;
-        this.shuffle = false;
-        this.repeat = false;
-    }
-
-    public MusicPlayer(MusicPlayerService service) {
+    public MusicPlayer(MusicPlayerService service, MusicPlayerListener listener) {
         this.service = service;
+        this.listener = listener;
         this.shuffle = false;
         this.repeat = false;
     }
@@ -76,19 +57,16 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
         }
 
         try {
-            if (this.activity != null) {
-                this.mediaPlayer.setDataSource(this.activity, uri);
-                this.mediaPlayer.prepare();
-                this.mediaPlayer.start();
+            this.mediaPlayer.setDataSource(this.service, uri);
+            this.mediaPlayer.prepare();
+            this.mediaPlayer.start();
 
-                this.activity.setBtnPlayImage(R.drawable.ic_baseline_pause_music);
-                this.activity.setMusicTexts(this.currentMusic.getTitle(), this.currentMusic.getArtist());
-                this.activity.setMusicSeekBar(this.currentMusic.getLength());
-            } else {
-                this.mediaPlayer.setDataSource(this.service, uri);
-                this.mediaPlayer.prepare();
-                this.mediaPlayer.start();
-            }
+            this.listener.onPreparedMusic(
+                    R.drawable.ic_baseline_pause_music,
+                    this.currentMusic.getTitle(),
+                    this.currentMusic.getArtist(),
+                    this.currentMusic.getLength()
+            );
         } catch (IOException e) {
             e.printStackTrace();
             this.mediaPlayer = null;
@@ -99,16 +77,16 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
     public void playMusic() {
         if (this.mediaPlayer != null) {
             this.mediaPlayer.start();
-            if (this.activity != null)
-                this.activity.setBtnPlayImage(R.drawable.ic_baseline_pause_music);
+
+            this.listener.onPlayMusic(R.drawable.ic_baseline_pause_music);
         }
     }
 
     public void pauseMusic() {
         if (this.mediaPlayer != null) {
             this.mediaPlayer.pause();
-            if (this.activity != null)
-                this.activity.setBtnPlayImage(R.drawable.ic_baseline_play_music);
+
+            this.listener.onPauseMusic(R.drawable.ic_baseline_play_music);
         }
     }
 
@@ -145,8 +123,7 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
             this.mediaPlayer.release();
             this.mediaPlayer = null;
 
-            if (this.activity != null)
-                this.activity.setBtnPlayImage(R.drawable.ic_baseline_play_music);
+            this.listener.onStopMediaPlayer(R.drawable.ic_baseline_play_music);
         }
     }
 
@@ -226,6 +203,17 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
         if (this.mediaPlayer != null) {
             this.mediaPlayer.seekTo(progress * 1000, MediaPlayer.SEEK_CLOSEST);
         }
+    }
+
+    // endregion
+
+    // region 5. Listener
+
+    public interface MusicPlayerListener {
+        void onPreparedMusic(int imgResource, String title, String artist, int length);
+        void onPlayMusic(int imgResource);
+        void onPauseMusic(int imgResource);
+        void onStopMediaPlayer(int imgResource);
     }
 
     // endregion

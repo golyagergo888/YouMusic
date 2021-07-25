@@ -16,11 +16,9 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
 import android.util.SparseArray;
 import android.view.MenuItem;
 import android.view.View;
@@ -40,7 +38,6 @@ import com.fokakefir.musicplayer.gui.fragment.PlaylistsFragment;
 import com.fokakefir.musicplayer.gui.fragment.SearchFragment;
 import com.fokakefir.musicplayer.logic.background.RequestDownloadMusicStreamResponse;
 import com.fokakefir.musicplayer.logic.database.MusicPlayerDBHelper;
-import com.fokakefir.musicplayer.logic.player.MusicPlayer;
 import com.fokakefir.musicplayer.logic.player.MusicPlayerService;
 import com.fokakefir.musicplayer.model.Music;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -54,14 +51,30 @@ import at.huber.youtubeExtractor.YtFile;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 import static com.fokakefir.musicplayer.logic.network.YoutubeAPI.YOUTUBE_ITAG_AUDIO_128K;
+import static com.fokakefir.musicplayer.logic.player.MusicPlayerService.INTENT_FILTER_SERVICE;
 
-public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, SlidingUpPanelLayout.PanelSlideListener, View.OnClickListener, RequestDownloadMusicStreamResponse, Runnable, SeekBar.OnSeekBarChangeListener {
+public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, SlidingUpPanelLayout.PanelSlideListener, View.OnClickListener, RequestDownloadMusicStreamResponse, SeekBar.OnSeekBarChangeListener {
 
     // region 0. Constants
 
     private static final int READ_STORAGE_PERMISSION_REQUEST_CODE = 1;
 
     public static final int DEFAULT_PLAYLIST_ID = 1;
+
+    public static final String INTENT_FILTER_ACTIVITY = "data_activity";
+
+    public static final String INTENT_TYPE_PLAY_URI = "play_uri";
+    public static final String INTENT_TYPE_PLAY = "play";
+    public static final String INTENT_TYPE_PAUSE = "pause";
+    public static final String INTENT_TYPE_NEXT = "next";
+    public static final String INTENT_TYPE_PREVIOUS = "previous";
+    public static final String INTENT_TYPE_PROGRESS = "progress";
+
+    public static final String TYPE = "type";
+    public static final String CURRENT_MUSIC = "current_music";
+    public static final String MUSICS = "musics";
+    public static final String URI = "uri";
+    public static final String PROGRESS = "progress";
 
     // endregion
 
@@ -77,8 +90,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     private BottomNavigationView bottomNav;
     private SlidingUpPanelLayout layout;
 
-    private MusicPlayer musicPlayer;
-
     private TextView txtMusicTitleDown;
     private TextView txtMusicArtistDown;
     private ImageButton btnPlayDown;
@@ -93,8 +104,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     private ImageButton btnNext;
 
     private boolean slidingSeekBar;
-
-    private Handler handler;
+    private boolean isPlaying;
+    private boolean isPlayable;
 
     // endregion
 
@@ -136,8 +147,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, this.searchFragment).commit();
         getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, this.playlistsFragment).hide(this.playlistsFragment).commit();
 
-        this.musicPlayer = new MusicPlayer(this);
-
         this.btnPlayDown.setImageResource(R.drawable.ic_baseline_play_music);
         this.btnPlayUp.setImageResource(R.drawable.ic_baseline_play_music);
         this.btnPlayDown.setOnClickListener(this);
@@ -148,9 +157,14 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         this.layout.addPanelSlideListener(this);
 
         this.seekBar.setOnSeekBarChangeListener(this);
-        this.handler = new Handler();
-        runOnUiThread(this);
         this.slidingSeekBar = false;
+
+        Intent intent = new Intent(MainActivity.this, MusicPlayerService.class);
+        startService(intent);
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(this.receiver, new IntentFilter(INTENT_FILTER_SERVICE));
+        this.isPlaying = false;
+        this.isPlayable = false;
 
         if (!checkPermissionForReadExternalStorage()) {
             try {
@@ -162,44 +176,9 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
-        if (this.musicPlayer.isPlayable() && this.musicPlayer.isPlaying()) {
-            Intent intent = new Intent(MainActivity.this, MusicPlayerService.class);
-            intent.putExtra(MusicPlayer.CURRENT_MUSIC, this.musicPlayer.getCurrentMusic());
-            intent.putParcelableArrayListExtra(MusicPlayer.MUSICS, this.musicPlayer.getMusics());
-            intent.putExtra(MusicPlayer.SHUFFLE, this.musicPlayer.isShuffle());
-            intent.putExtra(MusicPlayer.REPEAT, this.musicPlayer.isRepeat());
-            intent.putExtra(MusicPlayer.PROGRESS, this.musicPlayer.getTimePosition());
-
-            this.musicPlayer.stopMediaPlayer();
-
-            startService(intent);
-        }
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        try {
-            Intent stopServiceIntent = new Intent(MainActivity.this, MusicPlayerService.class);
-            stopService(stopServiceIntent);
-            LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(new BroadcastReceiver() {
-                @Override
-                public void onReceive(Context context, Intent intent) {
-                    Bundle bundle = intent.getExtras();
-
-                    musicPlayer.setCurrentMusic(bundle.getParcelable(MusicPlayer.CURRENT_MUSIC));
-                    Uri uri = Uri.parse(
-                            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) +
-                                    "/YoutubeMusics/" + musicPlayer.getCurrentMusic().getVideoId() + ".m4a"
-                    );
-                    musicPlayer.playMusicUri(uri);
-                    musicPlayer.setProgress(bundle.getInt(MusicPlayer.PROGRESS));
-                }
-            }, new IntentFilter("data"));
-
-        } catch (Exception e) {}
+    public void onDestroy() {
+        super.onDestroy();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(this.receiver);
     }
 
     @Override
@@ -290,22 +269,26 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     @Override
     public void onClick(View view) {
         if (view.getId() == R.id.btn_play_music_down || view.getId() == R.id.btn_play_music_up) {
-            if (this.musicPlayer.isPlayable()) {
-                if (this.musicPlayer.isPlaying()) {
-                    this.musicPlayer.pauseMusic();
+            if (this.isPlayable) {
+                Intent intent = new Intent(INTENT_FILTER_ACTIVITY);
+                if (this.isPlaying) {
+                    intent.putExtra(TYPE, INTENT_TYPE_PAUSE);
                 } else {
-                    this.musicPlayer.playMusic();
+                    intent.putExtra(TYPE, INTENT_TYPE_PLAY);
                 }
+                LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
             }
         } else if (view.getId() == R.id.btn_previous_music) {
-            if (this.musicPlayer.isPlayable()) {
-                this.musicPlayer.previousMusic();
-                this.seekBar.setProgress(0);
+            if (this.isPlayable) {
+                Intent intent = new Intent(INTENT_FILTER_ACTIVITY);
+                intent.putExtra(TYPE, INTENT_TYPE_PREVIOUS);
+                LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
             }
         } else if (view.getId() == R.id.btn_next_music) {
-            if (this.musicPlayer.isPlayable()) {
-                this.musicPlayer.nextMusic();
-                this.seekBar.setProgress(0);
+            if (this.isPlayable) {
+                Intent intent = new Intent(INTENT_FILTER_ACTIVITY);
+                intent.putExtra(TYPE, INTENT_TYPE_NEXT);
+                LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
             }
         }
     }
@@ -314,42 +297,60 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     // region 5. MusicPlayer
 
-    public void playMusic(Music music, int playlistId) {
-        Uri uri = Uri.parse(
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) +
-                        "/YoutubeMusics/" + music.getVideoId() + ".m4a"
-        );
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Bundle bundle = intent.getExtras();
+            switch (bundle.getString(MusicPlayerService.TYPE)) {
+                case MusicPlayerService.INTENT_TYPE_PREPARED:
+                    setBtnPlayImage(bundle.getInt(MusicPlayerService.IMAGE_RESOURCE));
+                    setMusicTexts(bundle.getString(MusicPlayerService.TITLE), bundle.getString(MusicPlayerService.ARTIST));
+                    setMusicSeekBar(bundle.getInt(MusicPlayerService.LENGTH));
+                    isPlaying = true;
+                    isPlayable = true;
+                    seekBar.setProgress(0);
+                    break;
 
-        this.musicPlayer.setCurrentMusic(music);
-        this.musicPlayer.setMusics(getMusics(playlistId));
+                case MusicPlayerService.INTENT_TYPE_PLAY:
+                    setBtnPlayImage(bundle.getInt(MusicPlayerService.IMAGE_RESOURCE));
+                    isPlaying = true;
+                    break;
 
-        this.musicPlayer.playMusicUri(uri);
-    }
+                case MusicPlayerService.INTENT_TYPE_PAUSE:
+                    setBtnPlayImage(bundle.getInt(MusicPlayerService.IMAGE_RESOURCE));
+                    isPlaying = false;
+                    break;
 
-    @SuppressLint("SetTextI18n")
-    @Override
-    public void run() {
-        if (this.musicPlayer.isPlayable() && !this.slidingSeekBar) {
-            int position = this.musicPlayer.getTimePosition();
-            this.seekBar.setProgress(position);
-            int minute = position / 60;
-            int second = position % 60;
-            String strMinute = String.valueOf(minute);
-            String strSecond;
-            if (second < 10)
-                strSecond = "0" + second;
-            else
-                strSecond = String.valueOf(second);
+                case MusicPlayerService.INTENT_TYPE_STOP:
+                    setBtnPlayImage(bundle.getInt(MusicPlayerService.IMAGE_RESOURCE));
+                    isPlaying = false;
+                    isPlayable = false;
+                    break;
 
-            this.txtCurrentTime.setText(strMinute+ ":" + strSecond);
+                case MusicPlayerService.INTENT_TYPE_POSITION:
+                    setMusicSeekBarPosition(bundle.getInt(MusicPlayerService.POSITION));
+                    break;
+            }
         }
-        this.handler.postDelayed(this, 1000);
+    };
+
+    public void playMusic(Music music, int playlistId) {
+        String strUri = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) +
+                "/YoutubeMusics/" + music.getVideoId() + ".m4a";
+
+        Intent intent = new Intent(INTENT_FILTER_ACTIVITY);
+        intent.putExtra(TYPE, INTENT_TYPE_PLAY_URI);
+        intent.putExtra(CURRENT_MUSIC, music);
+        intent.putExtra(MUSICS, getMusics(playlistId));
+        intent.putExtra(URI, strUri);
+
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
     @SuppressLint("SetTextI18n")
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        if (this.musicPlayer.isPlayable() && fromUser) {
+        if (this.isPlayable && fromUser) {
             int minute = progress / 60;
             int second = progress % 60;
             String strMinute = String.valueOf(minute);
@@ -371,8 +372,12 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
         this.slidingSeekBar = false;
-        if (this.musicPlayer.isPlayable()) {
-            this.musicPlayer.setProgress(seekBar.getProgress());
+        if (this.isPlayable) {
+            Intent intent = new Intent(INTENT_FILTER_ACTIVITY);
+            intent.putExtra(TYPE, INTENT_TYPE_PROGRESS);
+            intent.putExtra(PROGRESS, seekBar.getProgress());
+
+            LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
         }
     }
 
@@ -643,6 +648,23 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             strSecond = String.valueOf(second);
 
         this.txtFinalTime.setText(strMinute+ ":" + strSecond);
+    }
+
+    @SuppressLint("SetTextI18n")
+    public void setMusicSeekBarPosition(int position) {
+        if (this.isPlayable && !this.slidingSeekBar) {
+            this.seekBar.setProgress(position);
+            int minute = position / 60;
+            int second = position % 60;
+            String strMinute = String.valueOf(minute);
+            String strSecond;
+            if (second < 10)
+                strSecond = "0" + second;
+            else
+                strSecond = String.valueOf(second);
+
+            this.txtCurrentTime.setText(strMinute+ ":" + strSecond);
+        }
     }
 
     // endregion
