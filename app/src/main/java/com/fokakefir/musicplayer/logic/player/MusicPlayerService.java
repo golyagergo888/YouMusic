@@ -35,6 +35,7 @@ public class MusicPlayerService extends Service implements MusicPlayer.MusicPlay
     public static final String ARTIST = "artist";
     public static final String LENGTH = "length";
     public static final String POSITION = "position";
+    public static final String PLAYLIST_ID = "playlist_id";
 
     // endregion
 
@@ -83,6 +84,7 @@ public class MusicPlayerService extends Service implements MusicPlayer.MusicPlay
                 case MainActivity.INTENT_TYPE_PLAY_URI:
                     musicPlayer.setCurrentMusic(bundle.getParcelable(MainActivity.CURRENT_MUSIC));
                     musicPlayer.setMusics(bundle.getParcelableArrayList(MainActivity.MUSICS));
+                    musicPlayer.setPlaylistId(bundle.getInt(MainActivity.PLAYLIST_ID));
 
                     Uri uri = Uri.parse(bundle.getString(MainActivity.URI));
                     musicPlayer.playMusicUri(uri);
@@ -107,6 +109,10 @@ public class MusicPlayerService extends Service implements MusicPlayer.MusicPlay
                 case MainActivity.INTENT_TYPE_PROGRESS:
                     musicPlayer.setProgress(bundle.getInt(MainActivity.PROGRESS));
                     break;
+
+                case MainActivity.INTENT_TYPE_INSERT_NEW_MUSIC:
+                    musicPlayer.insertNewMusic(bundle.getParcelable(MainActivity.NEW_MUSIC));
+                    break;
             }
         }
     };
@@ -116,13 +122,14 @@ public class MusicPlayerService extends Service implements MusicPlayer.MusicPlay
     // region 4. Music listener
 
     @Override
-    public void onPreparedMusic(int imgResource, String title, String artist, int length) {
+    public void onPreparedMusic(int imgResource, String title, String artist, int length, int playlistId) {
         Intent intent = new Intent(INTENT_FILTER_SERVICE);
         intent.putExtra(TYPE, INTENT_TYPE_PREPARED);
         intent.putExtra(IMAGE_RESOURCE, imgResource);
         intent.putExtra(TITLE, title);
         intent.putExtra(ARTIST, artist);
         intent.putExtra(LENGTH, length);
+        intent.putExtra(PLAYLIST_ID, playlistId);
 
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }

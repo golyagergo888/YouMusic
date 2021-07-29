@@ -71,12 +71,15 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     public static final String INTENT_TYPE_NEXT = "next";
     public static final String INTENT_TYPE_PREVIOUS = "previous";
     public static final String INTENT_TYPE_PROGRESS = "progress";
+    public static final String INTENT_TYPE_INSERT_NEW_MUSIC = "insert_new_music";
 
     public static final String TYPE = "type";
     public static final String CURRENT_MUSIC = "current_music";
     public static final String MUSICS = "musics";
     public static final String URI = "uri";
     public static final String PROGRESS = "progress";
+    public static final String PLAYLIST_ID = "playlist_id";
+    public static final String NEW_MUSIC = "new_music";
 
     // endregion
 
@@ -108,6 +111,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     private boolean slidingSeekBar;
     private boolean isPlaying;
     private boolean isPlayable;
+    private int currentPlaylistId;
 
     // endregion
 
@@ -167,6 +171,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         LocalBroadcastManager.getInstance(this).registerReceiver(this.receiver, new IntentFilter(INTENT_FILTER_SERVICE));
         this.isPlaying = false;
         this.isPlayable = false;
+        this.currentPlaylistId = 0;
 
         if (!checkPermissionForReadExternalStorage()) {
             try {
@@ -310,6 +315,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                     setMusicSeekBar(bundle.getInt(MusicPlayerService.LENGTH));
                     isPlaying = true;
                     isPlayable = true;
+                    currentPlaylistId = bundle.getInt(MusicPlayerService.PLAYLIST_ID);
                     seekBar.setProgress(0);
                     break;
 
@@ -345,6 +351,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         intent.putExtra(CURRENT_MUSIC, music);
         intent.putExtra(MUSICS, getMusics(playlistId));
         intent.putExtra(URI, strUri);
+        intent.putExtra(PLAYLIST_ID, playlistId);
 
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
@@ -378,6 +385,17 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             Intent intent = new Intent(INTENT_FILTER_ACTIVITY);
             intent.putExtra(TYPE, INTENT_TYPE_PROGRESS);
             intent.putExtra(PROGRESS, seekBar.getProgress());
+
+            LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        }
+    }
+
+    public void addMusicToMusicPlayer(int playlistId, int musicId) {
+        Music newMusic = getMusicById(playlistId, musicId);
+        if (newMusic != null) {
+            Intent intent = new Intent(INTENT_FILTER_ACTIVITY);
+            intent.putExtra(TYPE, INTENT_TYPE_INSERT_NEW_MUSIC);
+            intent.putExtra(NEW_MUSIC, newMusic);
 
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
         }
@@ -462,6 +480,10 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         if (this.musicsFragment != null)
             this.musicsFragment.swapCursor(getAllMusic(this.musicsFragment.getPlaylistId()));
 
+        if (this.currentPlaylistId == DEFAULT_PLAYLIST_ID) {
+            addMusicToMusicPlayer(DEFAULT_PLAYLIST_ID, (int) id);
+        }
+
         Toast.makeText(this, "Downloaded", Toast.LENGTH_SHORT).show();
     }
 
@@ -487,6 +509,10 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             this.musicsFragment.swapCursor(getAllMusic(this.musicsFragment.getPlaylistId()));
 
         closeChoosePlaylistFragment();
+
+        if (this.currentPlaylistId == playlistId) {
+            addMusicToMusicPlayer(playlistId, musicId);
+        }
 
         Toast.makeText(this, "Music added to playlist", Toast.LENGTH_SHORT).show();
     }
@@ -621,6 +647,15 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         cursor.close();
 
         return musics;
+    }
+
+    public Music getMusicById(int playlistId, int musicId) {
+        ArrayList<Music> musics = getMusics(playlistId);
+        for (Music music : musics) {
+            if (music.getId() == musicId)
+                return music;
+        }
+        return null;
     }
 
     public void setBtnPlayImage(int resId) {

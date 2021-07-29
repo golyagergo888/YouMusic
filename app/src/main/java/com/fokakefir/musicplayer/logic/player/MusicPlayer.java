@@ -26,6 +26,7 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
     private ArrayList<Music> musics;
     private boolean shuffle;
     private boolean repeat;
+    private int playlistId;
 
     // endregion
 
@@ -66,7 +67,8 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
                     R.drawable.ic_baseline_pause_music,
                     this.currentMusic.getTitle(),
                     this.currentMusic.getArtist(),
-                    this.currentMusic.getLength()
+                    this.currentMusic.getLength(),
+                    this.playlistId
             );
         } catch (IOException e) {
             e.printStackTrace();
@@ -94,8 +96,8 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
     public void previousMusic() {
         if (this.currentMusic != null) {
             int position = getCurrentMusicPosition() - 1;
-            if (position >= 0) {
-                this.currentMusic = this.musics.get(position);
+            if (position >= 0 || (this.repeat && position == -1)) {
+                this.currentMusic = this.musics.get(position % this.musics.size());
                 Uri uri = Uri.parse(
                         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) +
                                 "/YoutubeMusics/" + this.currentMusic.getVideoId() + MainActivity.AUDIO_FORMAT
@@ -108,8 +110,8 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
     public void nextMusic() {
         if (this.currentMusic != null) {
             int position = getCurrentMusicPosition() + 1;
-            if (position < this.musics.size()) {
-                this.currentMusic = this.musics.get(position);
+            if (position < this.musics.size() || (this.repeat && position == this.musics.size())) {
+                this.currentMusic = this.musics.get(position % this.musics.size());
                 Uri uri = Uri.parse(
                         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) +
                                 "/YoutubeMusics/" + this.currentMusic.getVideoId() + MainActivity.AUDIO_FORMAT
@@ -136,7 +138,7 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
             if (!this.repeat) {
                 stopMediaPlayer();
             } else {
-                // TODO first music
+                nextMusic();
             }
         }
     }
@@ -206,12 +208,20 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
         }
     }
 
+    public void setPlaylistId(int playlistId) {
+        this.playlistId = playlistId;
+    }
+
+    public void insertNewMusic(Music newMusic) {
+        this.musics.add(newMusic);
+    }
+
     // endregion
 
     // region 5. Listener
 
     public interface MusicPlayerListener {
-        void onPreparedMusic(int imgResource, String title, String artist, int length);
+        void onPreparedMusic(int imgResource, String title, String artist, int length, int playlistId);
         void onPlayMusic(int imgResource);
         void onPauseMusic(int imgResource);
         void onStopMediaPlayer(int imgResource);
