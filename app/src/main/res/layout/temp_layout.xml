@@ -9,15 +9,15 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="50dp"
-        android:padding="32dp" >
+        android:padding="32dp">
 
         <ImageView
             android:id="@+id/img_music"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:adjustViewBounds="true"
-            android:src="@drawable/ic_baseline_music_24"
             android:background="@drawable/background_music_image"
+            android:src="@drawable/ic_baseline_music_24"
             app:tint="@color/primaryDarkRed" />
 
         <LinearLayout
@@ -27,35 +27,35 @@
             android:layout_below="@id/img_music"
             android:layout_marginTop="16dp"
             android:layout_marginBottom="12dp"
-            android:padding="6dp"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:padding="6dp">
 
             <TextView
                 android:id="@+id/txt_music_title_up"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="Title"
-                android:textSize="16sp"
-                android:textColor="@android:color/black"
-                android:textStyle="bold"
-                android:padding="2dp"
+                android:ellipsize="marquee"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
-                android:singleLine="true"
+                android:gravity="center"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:padding="2dp"
                 android:scrollHorizontally="true"
-                android:ellipsize="marquee"
-                android:marqueeRepeatLimit ="marquee_forever"/>
+                android:singleLine="true"
+                android:text="Title"
+                android:textColor="@android:color/black"
+                android:textSize="16sp"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/txt_music_artist_up"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
+                android:padding="2dp"
                 android:text="Artist"
-                android:textSize="16sp"
                 android:textColor="@android:color/black"
-                android:padding="2dp"/>
+                android:textSize="16sp" />
 
         </LinearLayout>
 
@@ -64,8 +64,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/layout_music_data"
-            android:padding="6dp"
-            android:clickable="true" >
+            android:clickable="true"
+            android:padding="6dp">
 
             <SeekBar
                 android:id="@+id/seek_bar"
@@ -73,10 +73,10 @@
                 android:layout_height="wrap_content"
                 android:paddingTop="8dp"
                 android:paddingBottom="4dp"
-                android:thumb="@drawable/custom_thumb"
-                android:thumbTint="@color/primaryDarkRed"
+                android:progressBackgroundTint="@color/black"
                 android:progressTint="@color/primaryRed"
-                android:progressBackgroundTint="@color/black" />
+                android:thumb="@drawable/custom_thumb"
+                android:thumbTint="@color/primaryDarkRed" />
 
             <TextView
                 android:id="@+id/txt_current_time"
@@ -85,8 +85,8 @@
                 android:layout_below="@id/seek_bar"
                 android:layout_alignParentStart="true"
                 android:text="0:00"
-                android:textSize="16sp"
-                android:textColor="@android:color/black" />
+                android:textColor="@android:color/black"
+                android:textSize="16sp" />
 
             <TextView
                 android:id="@+id/txt_final_time"
@@ -95,52 +95,76 @@
                 android:layout_below="@id/seek_bar"
                 android:layout_alignParentEnd="true"
                 android:text="0:00"
-                android:textSize="16sp"
-                android:textColor="@android:color/black" />
+                android:textColor="@android:color/black"
+                android:textSize="16sp" />
 
         </RelativeLayout>
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
             android:layout_below="@id/layout_seek_bar"
+            android:layout_marginTop="16dp"
             android:gravity="center"
-            android:padding="6dp"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:padding="6dp">
+
+            <ImageButton
+                android:id="@+id/btn_shuffle_music"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_centerVertical="true"
+                android:background="@android:color/white"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_shuffle_off"
+                android:tint="@color/primaryRed" />
 
             <ImageButton
                 android:id="@+id/btn_previous_music"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:layout_centerVertical="true"
-                android:src="@drawable/ic_baseline_previous_24"
+                android:layout_marginStart="12dp"
+                android:layout_toEndOf="@id/btn_shuffle_music"
                 android:background="@android:color/white"
-                android:tint="@color/primaryRed"
-                android:scaleType="fitCenter" />
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_baseline_previous_24"
+                android:tint="@color/primaryRed" />
 
             <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/btn_play_music_up"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
-                android:layout_toEndOf="@id/btn_previous_music"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
+                android:layout_toEndOf="@id/btn_previous_music"
+                android:clickable="true"
                 android:src="@drawable/ic_baseline_play_music"
-                app:civ_circle_background_color="@color/primaryRed"
-                android:clickable="true"/>
+                app:civ_circle_background_color="@color/primaryRed" />
 
             <ImageButton
                 android:id="@+id/btn_next_music"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
-                android:layout_toEndOf="@id/btn_play_music_up"
                 android:layout_centerVertical="true"
-                android:src="@drawable/ic_baseline_next_24"
+                android:layout_marginEnd="12dp"
+                android:layout_toEndOf="@id/btn_play_music_up"
                 android:background="@android:color/white"
-                android:tint="@color/primaryRed"
-                android:scaleType="fitCenter"/>
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_baseline_next_24"
+                android:tint="@color/primaryRed" />
+
+            <ImageButton
+                android:id="@+id/btn_repeat_music"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_centerVertical="true"
+                android:layout_toEndOf="@id/btn_next_music"
+                android:background="@android:color/white"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_repeat_off"
+                android:tint="@color/primaryRed" />
 
         </RelativeLayout>
 

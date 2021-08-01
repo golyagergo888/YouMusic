@@ -11,6 +11,8 @@ import com.fokakefir.musicplayer.model.Music;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class MusicPlayer implements MediaPlayer.OnCompletionListener {
 
@@ -24,6 +26,7 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
 
     private Music currentMusic;
     private ArrayList<Music> musics;
+    private ArrayList<Music> shuffleMusics;
     private boolean shuffle;
     private boolean repeat;
     private int playlistId;
@@ -97,7 +100,7 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
         if (this.currentMusic != null) {
             int position = getCurrentMusicPosition() - 1;
             if (position >= 0 || (this.repeat && position == -1)) {
-                this.currentMusic = this.musics.get(position % this.musics.size());
+                this.currentMusic = getMusicFromPosition((position + this.musics.size()) % this.musics.size());
                 Uri uri = Uri.parse(
                         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) +
                                 "/YoutubeMusics/" + this.currentMusic.getVideoId() + MainActivity.AUDIO_FORMAT
@@ -111,7 +114,7 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
         if (this.currentMusic != null) {
             int position = getCurrentMusicPosition() + 1;
             if (position < this.musics.size() || (this.repeat && position == this.musics.size())) {
-                this.currentMusic = this.musics.get(position % this.musics.size());
+                this.currentMusic = getMusicFromPosition(position % this.musics.size());
                 Uri uri = Uri.parse(
                         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) +
                                 "/YoutubeMusics/" + this.currentMusic.getVideoId() + MainActivity.AUDIO_FORMAT
@@ -147,10 +150,25 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
 
     // region 4. Getters and Setters
 
+    private Music getMusicFromPosition(int index) {
+        if (this.shuffle) {
+            return this.shuffleMusics.get(index);
+        } else {
+            return this.musics.get(index);
+        }
+    }
+
     private int getCurrentMusicPosition() {
-        for (int ind = 0; ind < musics.size(); ind++) {
-            if (this.currentMusic.getId() == this.musics.get(ind).getId())
-                return ind;
+        if (!this.shuffle) {
+            for (int ind = 0; ind < musics.size(); ind++) {
+                if (this.currentMusic.getId() == this.musics.get(ind).getId())
+                    return ind;
+            }
+        } else {
+            for (int ind = 0; ind < musics.size(); ind++) {
+                if (this.currentMusic.getId() == this.shuffleMusics.get(ind).getId())
+                    return ind;
+            }
         }
         return -1;
     }
@@ -192,10 +210,14 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
 
     public void setMusics(ArrayList<Music> musics) {
         this.musics = musics;
+        this.shuffleMusics = new ArrayList<>(musics);
+        Collections.shuffle(this.shuffleMusics);
     }
 
     public void setShuffle(boolean shuffle) {
         this.shuffle = shuffle;
+        if (this.shuffle && this.shuffleMusics != null)
+            Collections.shuffle(this.shuffleMusics);
     }
 
     public void setRepeat(boolean repeat) {
@@ -214,6 +236,9 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
 
     public void insertNewMusic(Music newMusic) {
         this.musics.add(newMusic);
+
+        int index = ThreadLocalRandom.current().nextInt(0, this.shuffleMusics.size() + 1);
+        this.shuffleMusics.add(index, newMusic);
     }
 
     // endregion

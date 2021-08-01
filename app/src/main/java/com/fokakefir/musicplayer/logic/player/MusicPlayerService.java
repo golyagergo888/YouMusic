@@ -113,6 +113,14 @@ public class MusicPlayerService extends Service implements MusicPlayer.MusicPlay
                 case MainActivity.INTENT_TYPE_INSERT_NEW_MUSIC:
                     musicPlayer.insertNewMusic(bundle.getParcelable(MainActivity.NEW_MUSIC));
                     break;
+
+                case MainActivity.INTENT_TYPE_SHUFFLE:
+                    musicPlayer.setShuffle(bundle.getBoolean(MainActivity.SHUFFLE));
+                    break;
+
+                case MainActivity.INTENT_TYPE_REPEAT:
+                    musicPlayer.setRepeat(bundle.getBoolean(MainActivity.REPEAT));
+                    break;
             }
         }
     };

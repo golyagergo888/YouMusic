@@ -72,6 +72,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     public static final String INTENT_TYPE_PREVIOUS = "previous";
     public static final String INTENT_TYPE_PROGRESS = "progress";
     public static final String INTENT_TYPE_INSERT_NEW_MUSIC = "insert_new_music";
+    public static final String INTENT_TYPE_SHUFFLE = "shuffle";
+    public static final String INTENT_TYPE_REPEAT = "repeat";
 
     public static final String TYPE = "type";
     public static final String CURRENT_MUSIC = "current_music";
@@ -80,6 +82,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     public static final String PROGRESS = "progress";
     public static final String PLAYLIST_ID = "playlist_id";
     public static final String NEW_MUSIC = "new_music";
+    public static final String SHUFFLE = "shuffle";
+    public static final String REPEAT = "repeat";
 
     // endregion
 
@@ -107,10 +111,14 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     private CircleImageView btnPlayUp;
     private ImageButton btnPrevious;
     private ImageButton btnNext;
+    private ImageButton btnShuffle;
+    private ImageButton btnRepeat;
 
     private boolean slidingSeekBar;
     private boolean isPlaying;
     private boolean isPlayable;
+    private boolean isShuffle;
+    private boolean isRepeat;
     private int currentPlaylistId;
 
     // endregion
@@ -145,6 +153,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         this.btnPlayUp = findViewById(R.id.btn_play_music_up);
         this.btnPrevious = findViewById(R.id.btn_previous_music);
         this.btnNext = findViewById(R.id.btn_next_music);
+        this.btnShuffle = findViewById(R.id.btn_shuffle_music);
+        this.btnRepeat = findViewById(R.id.btn_repeat_music);
 
         this.txtMusicTitleDown.setSelected(true);
         this.txtMusicTitleUp.setSelected(true);
@@ -153,12 +163,12 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, this.searchFragment).commit();
         getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, this.playlistsFragment).hide(this.playlistsFragment).commit();
 
-        this.btnPlayDown.setImageResource(R.drawable.ic_baseline_play_music);
-        this.btnPlayUp.setImageResource(R.drawable.ic_baseline_play_music);
         this.btnPlayDown.setOnClickListener(this);
         this.btnPlayUp.setOnClickListener(this);
         this.btnPrevious.setOnClickListener(this);
         this.btnNext.setOnClickListener(this);
+        this.btnShuffle.setOnClickListener(this);
+        this.btnRepeat.setOnClickListener(this);
 
         this.layout.addPanelSlideListener(this);
 
@@ -171,6 +181,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         LocalBroadcastManager.getInstance(this).registerReceiver(this.receiver, new IntentFilter(INTENT_FILTER_SERVICE));
         this.isPlaying = false;
         this.isPlayable = false;
+        this.isShuffle = false;
+        this.isRepeat = false;
         this.currentPlaylistId = 0;
 
         if (!checkPermissionForReadExternalStorage()) {
@@ -297,6 +309,28 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 intent.putExtra(TYPE, INTENT_TYPE_NEXT);
                 LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
             }
+        } else if (view.getId() == R.id.btn_shuffle_music) {
+            Intent intent = new Intent(INTENT_FILTER_ACTIVITY);
+            intent.putExtra(TYPE, INTENT_TYPE_SHUFFLE);
+            intent.putExtra(SHUFFLE, !this.isShuffle);
+            LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+
+            if (this.isShuffle)
+                this.btnShuffle.setImageResource(R.drawable.ic_shuffle_off);
+            else
+                this.btnShuffle.setImageResource(R.drawable.ic_shuffle_on);
+            this.isShuffle = !this.isShuffle;
+        } else if (view.getId() == R.id.btn_repeat_music) {
+            Intent intent = new Intent(INTENT_FILTER_ACTIVITY);
+            intent.putExtra(TYPE, INTENT_TYPE_REPEAT);
+            intent.putExtra(REPEAT, !this.isRepeat);
+            LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+
+            if (this.isRepeat)
+                this.btnRepeat.setImageResource(R.drawable.ic_repeat_off);
+            else
+                this.btnRepeat.setImageResource(R.drawable.ic_repeat_on);
+            this.isRepeat = !this.isRepeat;
         }
     }
 
