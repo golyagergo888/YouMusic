@@ -454,23 +454,27 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     // region 7. Download and delete music
 
-    public void downloadMusic(String url, String videoArtist) {
-        YouTubeUriExtractor youTubeUriExtractor = new YouTubeUriExtractor(this) {
-            @Override
-            public void onUrisAvailable(String videoId, String videoTitle, SparseArray<YtFile> ytFiles) {
-                if (ytFiles != null) {
-                    try {
-                        String downloadUrl = ytFiles.get(YOUTUBE_ITAG_AUDIO_128K).getUrl();
-                        RequestDownloadMusicStream requestDownloadMusicStream = new RequestDownloadMusicStream(MainActivity.this, MainActivity.this);
-                        requestDownloadMusicStream.execute(downloadUrl, videoId, videoTitle, videoArtist);
-                    } catch (Exception e) {
-                        Toast.makeText(MainActivity.this, String.valueOf(e), Toast.LENGTH_SHORT).show();
+    public void downloadMusic(String url, String videoId, String videoArtist) {
+        if (!isMusicAlreadyDownloaded(videoId)) {
+            YouTubeUriExtractor youTubeUriExtractor = new YouTubeUriExtractor(this) {
+                @Override
+                public void onUrisAvailable(String videoId, String videoTitle, SparseArray<YtFile> ytFiles) {
+                    if (ytFiles != null) {
+                        try {
+                            String downloadUrl = ytFiles.get(YOUTUBE_ITAG_AUDIO_128K).getUrl();
+                            RequestDownloadMusicStream requestDownloadMusicStream = new RequestDownloadMusicStream(MainActivity.this, MainActivity.this);
+                            requestDownloadMusicStream.execute(downloadUrl, videoId, videoTitle, videoArtist);
+                        } catch (Exception e) {
+                            Toast.makeText(MainActivity.this, String.valueOf(e), Toast.LENGTH_SHORT).show();
+                        }
                     }
                 }
-            }
-        };
+            };
 
-        youTubeUriExtractor.execute(url);
+            youTubeUriExtractor.execute(url);
+        } else {
+            Toast.makeText(this, "Music is already downloaded", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -690,6 +694,14 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 return music;
         }
         return null;
+    }
+
+    public boolean isMusicAlreadyDownloaded(String videoId) {
+        Cursor cursor = this.database.rawQuery(
+                "SELECT * FROM " + MusicEntry.TABLE_NAME + " WHERE " + MusicEntry.COLUMN_VIDEO_ID + "=?",
+                new String[]{videoId}
+        );
+        return cursor.getCount() > 0;
     }
 
     public void setBtnPlayImage(int resId) {

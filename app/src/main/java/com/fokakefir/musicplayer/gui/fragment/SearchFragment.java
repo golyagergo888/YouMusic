@@ -129,7 +129,7 @@ public class SearchFragment extends Fragment implements Callback<YoutubeVideos>,
     @Override
     public void onVideoDownloadClick(String videoId, String videoChannel) {
         String url = "https://www.youtube.com/watch?v=" + videoId;
-        this.activity.downloadMusic(url, videoChannel);
+        this.activity.downloadMusic(url, videoId, videoChannel);
     }
 
     // endregion
