@@ -68,7 +68,12 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
 
         holder.txtTitle.setText(currentMusic.getTitle());
         holder.txtArtist.setText(currentMusic.getArtist());
-        holder.txtLength.setText((currentMusic.getLength() / 60) + ":" + (currentMusic.getLength() % 60));
+
+        if (currentMusic.getLength() % 60 > 9)
+            holder.txtLength.setText((currentMusic.getLength() / 60) + ":" + (currentMusic.getLength() % 60));
+        else
+            holder.txtLength.setText((currentMusic.getLength() / 60) + ":0" + (currentMusic.getLength() % 60));
+
         holder.music = currentMusic;
     }
 
