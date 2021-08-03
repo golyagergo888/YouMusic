@@ -22,7 +22,7 @@
             app:avType="fill"
             app:avColor="@color/primaryDarkRed"
             app:avSpeed="medium" />
-        
+
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"

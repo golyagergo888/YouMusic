@@ -123,6 +123,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     private boolean isShuffle;
     private boolean isRepeat;
     private int currentPlaylistId;
+    private int currentAudioSessionId;
 
     // endregion
 
@@ -188,6 +189,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         this.isShuffle = false;
         this.isRepeat = false;
         this.currentPlaylistId = 0;
+        this.currentAudioSessionId = -1;
 
         String[] permissions = {
                 android.Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -350,7 +352,12 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                     isPlaying = true;
                     isPlayable = true;
                     currentPlaylistId = bundle.getInt(MusicPlayerService.PLAYLIST_ID);
-                    visualizer.setAudioSessionId(bundle.getInt(MusicPlayerService.AUDIO_SESSION_ID));
+
+                    int audioSessionId = bundle.getInt(MusicPlayerService.AUDIO_SESSION_ID);
+                    if (audioSessionId != -1 && audioSessionId != currentAudioSessionId) {
+                        visualizer.setAudioSessionId(bundle.getInt(MusicPlayerService.AUDIO_SESSION_ID));
+                        currentAudioSessionId = audioSessionId;
+                    }
                     seekBar.setProgress(0);
                     break;
 
