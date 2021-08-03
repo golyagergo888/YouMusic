@@ -56,8 +56,8 @@ import static com.fokakefir.musicplayer.logic.player.MusicPlayerService.INTENT_F
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, SlidingUpPanelLayout.PanelSlideListener, View.OnClickListener, RequestDownloadMusicStreamResponse, SeekBar.OnSeekBarChangeListener {
 
     // region 0. Constants
-
-    private static final int READ_STORAGE_PERMISSION_REQUEST_CODE = 1;
+    
+    private static final int PERMISSIONS_CODE = 69;
 
     public static final int DEFAULT_PLAYLIST_ID = 1;
 
@@ -185,12 +185,14 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         this.isRepeat = false;
         this.currentPlaylistId = 0;
 
-        if (!checkPermissionForReadExternalStorage()) {
-            try {
-                requestPermissionForReadExternalStorage();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        String[] permissions = {
+                android.Manifest.permission.READ_EXTERNAL_STORAGE,
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                android.Manifest.permission.RECORD_AUDIO
+        };
+
+        if (!hasPermissions(this, permissions)) {
+            ActivityCompat.requestPermissions(this, permissions, PERMISSIONS_CODE);
         }
     }
 
@@ -213,24 +215,15 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         }
     }
 
-    public void requestPermissionForReadExternalStorage() throws Exception {
-        try {
-            ActivityCompat.requestPermissions((Activity) this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    READ_STORAGE_PERMISSION_REQUEST_CODE);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
+    public static boolean hasPermissions(Context context, String... permissions) {
+        if (context != null && permissions != null) {
+            for (String permission : permissions) {
+                if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
+                    return false;
+                }
+            }
         }
-    }
-
-    public boolean checkPermissionForReadExternalStorage() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            int result = this.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE);
-            int result2 = this.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-
-            return (result == PackageManager.PERMISSION_GRANTED && result2 == PackageManager.PERMISSION_GRANTED);
-        }
-        return false;
+        return true;
     }
 
     // endregion
