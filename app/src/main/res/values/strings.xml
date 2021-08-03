@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">MusicPlayer</string>
+    <string name="app_name">YouMusic</string>
 
     <string-array name="colors">
         <item>red</item>
