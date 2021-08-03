@@ -36,6 +36,7 @@ public class MusicPlayerService extends Service implements MusicPlayer.MusicPlay
     public static final String LENGTH = "length";
     public static final String POSITION = "position";
     public static final String PLAYLIST_ID = "playlist_id";
+    public static final String AUDIO_SESSION_ID = "audio_session_id";
 
     // endregion
 
@@ -130,7 +131,7 @@ public class MusicPlayerService extends Service implements MusicPlayer.MusicPlay
     // region 4. Music listener
 
     @Override
-    public void onPreparedMusic(int imgResource, String title, String artist, int length, int playlistId) {
+    public void onPreparedMusic(int imgResource, String title, String artist, int length, int playlistId, int audioSessionId) {
         Intent intent = new Intent(INTENT_FILTER_SERVICE);
         intent.putExtra(TYPE, INTENT_TYPE_PREPARED);
         intent.putExtra(IMAGE_RESOURCE, imgResource);
@@ -138,6 +139,7 @@ public class MusicPlayerService extends Service implements MusicPlayer.MusicPlay
         intent.putExtra(ARTIST, artist);
         intent.putExtra(LENGTH, length);
         intent.putExtra(PLAYLIST_ID, playlistId);
+        intent.putExtra(AUDIO_SESSION_ID, audioSessionId);
 
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }

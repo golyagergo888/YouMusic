@@ -71,7 +71,8 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
                     this.currentMusic.getTitle(),
                     this.currentMusic.getArtist(),
                     this.currentMusic.getLength(),
-                    this.playlistId
+                    this.playlistId,
+                    this.mediaPlayer.getAudioSessionId()
             );
         } catch (IOException e) {
             e.printStackTrace();
@@ -246,7 +247,7 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
     // region 5. Listener
 
     public interface MusicPlayerListener {
-        void onPreparedMusic(int imgResource, String title, String artist, int length, int playlistId);
+        void onPreparedMusic(int imgResource, String title, String artist, int length, int playlistId, int audioSessionId);
         void onPlayMusic(int imgResource);
         void onPauseMusic(int imgResource);
         void onStopMediaPlayer(int imgResource);

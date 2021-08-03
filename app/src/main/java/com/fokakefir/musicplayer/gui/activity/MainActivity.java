@@ -40,6 +40,8 @@ import com.fokakefir.musicplayer.logic.background.RequestDownloadMusicStreamResp
 import com.fokakefir.musicplayer.logic.database.MusicPlayerDBHelper;
 import com.fokakefir.musicplayer.logic.player.MusicPlayerService;
 import com.fokakefir.musicplayer.model.Music;
+import com.gauravk.audiovisualizer.base.BaseVisualizer;
+import com.gauravk.audiovisualizer.visualizer.CircleLineVisualizer;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
@@ -56,7 +58,7 @@ import static com.fokakefir.musicplayer.logic.player.MusicPlayerService.INTENT_F
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, SlidingUpPanelLayout.PanelSlideListener, View.OnClickListener, RequestDownloadMusicStreamResponse, SeekBar.OnSeekBarChangeListener {
 
     // region 0. Constants
-    
+
     private static final int PERMISSIONS_CODE = 69;
 
     public static final int DEFAULT_PLAYLIST_ID = 1;
@@ -103,6 +105,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     private TextView txtMusicArtistDown;
     private ImageButton btnPlayDown;
 
+    private BaseVisualizer visualizer;
     private TextView txtMusicTitleUp;
     private TextView txtMusicArtistUp;
     private TextView txtCurrentTime;
@@ -145,6 +148,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         this.txtMusicArtistDown = findViewById(R.id.txt_music_artist_down);
         this.btnPlayDown = findViewById(R.id.btn_play_music_down);
 
+        this.visualizer = findViewById(R.id.circle_line_visualizer);
         this.txtMusicTitleUp = findViewById(R.id.txt_music_title_up);
         this.txtMusicArtistUp = findViewById(R.id.txt_music_artist_up);
         this.txtCurrentTime = findViewById(R.id.txt_current_time);
@@ -200,6 +204,9 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     public void onDestroy() {
         super.onDestroy();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(this.receiver);
+        if (this.visualizer != null) {
+            this.visualizer.release();
+        }
     }
 
     @Override
@@ -343,6 +350,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                     isPlaying = true;
                     isPlayable = true;
                     currentPlaylistId = bundle.getInt(MusicPlayerService.PLAYLIST_ID);
+                    visualizer.setAudioSessionId(bundle.getInt(MusicPlayerService.AUDIO_SESSION_ID));
                     seekBar.setProgress(0);
                     break;
 
