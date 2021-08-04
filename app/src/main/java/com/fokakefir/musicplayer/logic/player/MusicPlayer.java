@@ -27,6 +27,7 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
     private Music currentMusic;
     private ArrayList<Music> musics;
     private ArrayList<Music> shuffleMusics;
+    private ArrayList<Music> queueMusics;
     private boolean shuffle;
     private boolean repeat;
     private int playlistId;
@@ -38,6 +39,7 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
     public MusicPlayer(MusicPlayerService service, MusicPlayerListener listener) {
         this.service = service;
         this.listener = listener;
+        this.queueMusics = new ArrayList<>();
         this.shuffle = false;
         this.repeat = false;
     }
@@ -78,7 +80,40 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
             e.printStackTrace();
             this.mediaPlayer = null;
         }
+    }
 
+    public void playMusicUri(Uri uri, Music music) {
+        if (this.mediaPlayer == null) {
+            this.mediaPlayer = new MediaPlayer();
+            this.mediaPlayer.setAudioAttributes(
+                    new AudioAttributes.Builder()
+                            .setUsage(AudioAttributes.USAGE_MEDIA)
+                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                            .build()
+            );
+            this.mediaPlayer.setOnCompletionListener(this);
+        } else {
+            this.mediaPlayer.stop();
+            this.mediaPlayer.reset();
+        }
+
+        try {
+            this.mediaPlayer.setDataSource(this.service, uri);
+            this.mediaPlayer.prepare();
+            this.mediaPlayer.start();
+
+            this.listener.onPreparedMusic(
+                    R.drawable.ic_baseline_pause_music,
+                    music.getTitle(),
+                    music.getArtist(),
+                    music.getLength(),
+                    this.playlistId,
+                    this.mediaPlayer.getAudioSessionId()
+            );
+        } catch (IOException e) {
+            e.printStackTrace();
+            this.mediaPlayer = null;
+        }
     }
 
     public void playMusic() {
@@ -112,7 +147,15 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
     }
 
     public void nextMusic() {
-        if (this.currentMusic != null) {
+        if (this.queueMusics != null && !this.queueMusics.isEmpty()){
+            Music queueMusic = this.queueMusics.get(0);
+            Uri uri = Uri.parse(
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) +
+                            "/YoutubeMusics/" + queueMusic.getVideoId() + MainActivity.AUDIO_FORMAT
+            );
+            this.playMusicUri(uri, queueMusic);
+            this.queueMusics.remove(0);
+        } else if (this.currentMusic != null) {
             int position = getCurrentMusicPosition() + 1;
             if (position < this.musics.size() || (this.repeat && position == this.musics.size())) {
                 this.currentMusic = getMusicFromPosition(position % this.musics.size());
@@ -240,6 +283,10 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
 
         int index = ThreadLocalRandom.current().nextInt(0, this.shuffleMusics.size() + 1);
         this.shuffleMusics.add(index, newMusic);
+    }
+
+    public void addQueueMusic(Music queueMusic) {
+        this.queueMusics.add(queueMusic);
     }
 
     // endregion

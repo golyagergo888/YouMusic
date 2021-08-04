@@ -122,6 +122,10 @@ public class MusicPlayerService extends Service implements MusicPlayer.MusicPlay
                 case MainActivity.INTENT_TYPE_REPEAT:
                     musicPlayer.setRepeat(bundle.getBoolean(MainActivity.REPEAT));
                     break;
+
+                case MainActivity.INTENT_TYPE_QUEUE_MUSIC:
+                    musicPlayer.addQueueMusic(bundle.getParcelable(MainActivity.NEW_MUSIC));
+                    break;
             }
         }
     };

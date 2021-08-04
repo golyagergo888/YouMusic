@@ -80,6 +80,11 @@ public class MusicsFragment extends Fragment implements MusicAdapter.OnMusicList
     }
 
     @Override
+    public void onAddToQueueMusicClick(Music music) {
+        this.activity.addMusicToQueue(music);
+    }
+
+    @Override
     public void onAddMusicClick(Music music) {
         this.activity.addChoosePlaylistFragment(music.getId());
     }

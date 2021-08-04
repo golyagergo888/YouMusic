@@ -76,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     public static final String INTENT_TYPE_INSERT_NEW_MUSIC = "insert_new_music";
     public static final String INTENT_TYPE_SHUFFLE = "shuffle";
     public static final String INTENT_TYPE_REPEAT = "repeat";
+    public static final String INTENT_TYPE_QUEUE_MUSIC = "queue";
 
     public static final String TYPE = "type";
     public static final String CURRENT_MUSIC = "current_music";
@@ -441,6 +442,14 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
         }
+    }
+
+    public void addMusicToQueue(Music music) {
+        Intent intent = new Intent(INTENT_FILTER_ACTIVITY);
+        intent.putExtra(TYPE, INTENT_TYPE_QUEUE_MUSIC);
+        intent.putExtra(NEW_MUSIC, music);
+
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
     // endregion

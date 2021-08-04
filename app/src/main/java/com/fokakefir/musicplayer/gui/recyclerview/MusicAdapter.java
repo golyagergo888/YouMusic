@@ -99,6 +99,7 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
 
     public class MusicViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnCreateContextMenuListener, MenuItem.OnMenuItemClickListener {
 
+        private static final int MENU_ITEM_QUEUE_ID = 0;
         private static final int MENU_ITEM_ADD_ID = 1;
         private static final int MENU_ITEM_REMOVE_ID = 2;
         private static final int MENU_ITEM_DELETE_ID = 3;
@@ -140,14 +141,16 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
         public void onCreateContextMenu(ContextMenu menu, View view, ContextMenu.ContextMenuInfo contextMenuInfo) {
             menu.setHeaderTitle("Options");
 
-            MenuItem itemAdd = menu.add(Menu.NONE, MENU_ITEM_ADD_ID, 1, "Add music to playlist");
+            MenuItem itemQueue = menu.add(Menu.NONE, MENU_ITEM_QUEUE_ID, 1, "Add to queue");
+            MenuItem itemAdd = menu.add(Menu.NONE, MENU_ITEM_ADD_ID, 2, "Add to playlist");
+            itemQueue.setOnMenuItemClickListener(this);
             itemAdd.setOnMenuItemClickListener(this);
 
             if (playlistId == MainActivity.DEFAULT_PLAYLIST_ID) {
-                MenuItem itemDelete = menu.add(Menu.NONE, MENU_ITEM_DELETE_ID, 2, "Delete music");
+                MenuItem itemDelete = menu.add(Menu.NONE, MENU_ITEM_DELETE_ID, 3, "Delete music");
                 itemDelete.setOnMenuItemClickListener(this);
             } else {
-                MenuItem itemRemove = menu.add(Menu.NONE, MENU_ITEM_REMOVE_ID, 2, "Remove from playlist");
+                MenuItem itemRemove = menu.add(Menu.NONE, MENU_ITEM_REMOVE_ID, 3, "Remove from playlist");
                 itemRemove.setOnMenuItemClickListener(this);
             }
         }
@@ -155,6 +158,9 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
         @Override
         public boolean onMenuItemClick(MenuItem item) {
             switch (item.getItemId()) {
+                case MENU_ITEM_QUEUE_ID:
+                    this.onMusicListener.onAddToQueueMusicClick(this.music);
+                    return true;
                 case MENU_ITEM_ADD_ID:
                     this.onMusicListener.onAddMusicClick(this.music);
                     return true;
@@ -176,6 +182,7 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
 
     public interface OnMusicListener {
         void onMusicClick(Music music);
+        void onAddToQueueMusicClick(Music music);
         void onAddMusicClick(Music music);
         void onRemoveMusicClick(Music music);
         void onDeleteMusicClick(Music music);
