@@ -182,10 +182,10 @@ public class MusicPlayer implements MediaPlayer.OnCompletionListener {
         if (getCurrentMusicPosition() < this.musics.size() - 1) {
             nextMusic();
         } else {
-            if (!this.repeat) {
-                stopMediaPlayer();
-            } else {
+            if (this.repeat || (this.queueMusics != null && !this.queueMusics.isEmpty())) {
                 nextMusic();
+            } else {
+                stopMediaPlayer();
             }
         }
     }

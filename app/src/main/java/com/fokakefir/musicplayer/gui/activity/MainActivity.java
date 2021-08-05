@@ -374,6 +374,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
                 case MusicPlayerService.INTENT_TYPE_STOP:
                     setBtnPlayImage(bundle.getInt(MusicPlayerService.IMAGE_RESOURCE));
+                    setMusicTexts("Title", "Artist");
                     isPlaying = false;
                     isPlayable = false;
                     break;
