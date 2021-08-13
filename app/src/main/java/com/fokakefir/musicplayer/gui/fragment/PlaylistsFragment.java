@@ -121,12 +121,18 @@ public class PlaylistsFragment extends Fragment implements PlaylistAdapter.OnPla
 
     @Override
     public void onPlaylistCreate(String name, String color) {
-        this.activity.insertPlaylist(name, color);
+        if (!name.isEmpty())
+            this.activity.insertPlaylist(name, color);
+        else
+            Toast.makeText(this.activity, "Name can't be empty", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onPlaylistEdit(int playlistId, String name, String color) {
-        this.activity.updatePlaylist(playlistId, name, color);
+        if (!name.isEmpty())
+            this.activity.updatePlaylist(playlistId, name, color);
+        else
+            Toast.makeText(this.activity, "Name can't be empty", Toast.LENGTH_SHORT).show();
     }
 
     // endregion
