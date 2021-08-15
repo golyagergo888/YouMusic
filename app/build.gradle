@@ -9,8 +9,8 @@ android {
         applicationId "com.fokakefir.musicplayer"
         minSdkVersion 28
         targetSdkVersion 30
-        versionCode 3
-        versionName "1.1.0"
+        versionCode 4
+        versionName "1.2.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -45,6 +45,7 @@ dependencies {
     implementation 'com.github.bumptech.glide:glide:4.9.0'
     implementation 'de.hdodenhof:circleimageview:3.1.0'
     implementation 'com.gauravk.audiovisualizer:audiovisualizer:0.9.2'
+    implementation 'androidx.media:media:1.4.1'
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
