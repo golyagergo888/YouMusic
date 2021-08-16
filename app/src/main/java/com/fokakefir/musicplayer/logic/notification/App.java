@@ -10,7 +10,6 @@ public class App extends Application {
     // region 0. Constants
 
     public static final String CHANNEL_ID_1 = "notification_channel1";
-    public static final String CHANNEL_ID_2 = "notification_channel2";
 
     // endregion
 
@@ -40,17 +39,8 @@ public class App extends Application {
             );
             channel1.setDescription("This is notification channel 1");
 
-            NotificationChannel channel2 = new NotificationChannel(
-                    CHANNEL_ID_2,
-                    "Channel 2",
-                    NotificationManager.IMPORTANCE_LOW
-            );
-            channel2.setDescription("This is notification channel 2");
-
             NotificationManager manager = getSystemService(NotificationManager.class);
             manager.createNotificationChannel(channel1);
-            manager.createNotificationChannel(channel2);
-
         }
     }
 

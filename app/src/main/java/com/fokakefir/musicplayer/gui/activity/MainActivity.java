@@ -5,9 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -16,7 +14,6 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.SparseArray;
@@ -41,12 +38,12 @@ import com.fokakefir.musicplayer.logic.database.MusicPlayerDBHelper;
 import com.fokakefir.musicplayer.logic.player.MusicPlayerService;
 import com.fokakefir.musicplayer.model.Music;
 import com.gauravk.audiovisualizer.base.BaseVisualizer;
-import com.gauravk.audiovisualizer.visualizer.CircleLineVisualizer;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 import at.huber.youtubeExtractor.YouTubeUriExtractor;
 import at.huber.youtubeExtractor.YtFile;
@@ -126,6 +123,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     private int currentPlaylistId;
     private int currentAudioSessionId;
 
+    private List<String> downloadingMusicList;
+
     // endregion
 
     // region 2. Lifecycle
@@ -191,6 +190,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         this.isRepeat = false;
         this.currentPlaylistId = 0;
         this.currentAudioSessionId = -1;
+
+        this.downloadingMusicList = new ArrayList<>();
 
         String[] permissions = {
                 android.Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -474,7 +475,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     // region 7. Download and delete music
 
     public void downloadMusic(String url, String videoId, String videoArtist) {
-        if (!isMusicAlreadyDownloaded(videoId)) {
+        if (!isMusicAlreadyDownloaded(videoId) && !isMusicActuallyDownloading(videoId)) {
             YouTubeUriExtractor youTubeUriExtractor = new YouTubeUriExtractor(this) {
                 @Override
                 public void onUrisAvailable(String videoId, String videoTitle, SparseArray<YtFile> ytFiles) {
@@ -483,6 +484,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                             String downloadUrl = ytFiles.get(YOUTUBE_ITAG_AUDIO_128K).getUrl();
                             RequestDownloadMusicStream requestDownloadMusicStream = new RequestDownloadMusicStream(MainActivity.this, MainActivity.this);
                             requestDownloadMusicStream.execute(downloadUrl, videoId, videoTitle, videoArtist);
+                            downloadingMusicList.add(videoId);
                         } catch (Exception e) {
                             Toast.makeText(MainActivity.this, String.valueOf(e), Toast.LENGTH_SHORT).show();
                         }
@@ -492,13 +494,14 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
             youTubeUriExtractor.execute(url);
         } else {
-            Toast.makeText(this, "Music is already downloaded", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Music is already downloaded or actually downloading", Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
     public void onMusicDownloaded(String videoId, String title, String artist, int length) {
         insertMusic(videoId, title, artist, length);
+        this.downloadingMusicList.remove(videoId);
     }
 
     public void downloadThumbnail(String url, String name) {
@@ -721,6 +724,13 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 new String[]{videoId}
         );
         return cursor.getCount() > 0;
+    }
+
+    public boolean isMusicActuallyDownloading(String videoId) {
+        if (this.downloadingMusicList.isEmpty())
+            return false;
+
+        return this.downloadingMusicList.contains(videoId);
     }
 
     public void setBtnPlayImage(int resId) {

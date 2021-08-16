@@ -1,5 +1,7 @@
 package com.fokakefir.musicplayer.logic.background;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.media.MediaMetadataRetriever;
@@ -26,7 +28,6 @@ public class RequestDownloadMusicStream extends AsyncTask<String, String, String
 
     // region 0. Constants
 
-    public static final int PROGRESS_MAX = 100;
     public static final int NOTIFICATION_ID_MAX = 1000000;
 
     // endregion
@@ -39,6 +40,9 @@ public class RequestDownloadMusicStream extends AsyncTask<String, String, String
     private NotificationManagerCompat notificationManager;
     private NotificationCompat.Builder notificationBuilder;
     private int notificationId;
+    private NotificationChannel notificationChannel;
+    private String notificationChannelName;
+    private int progressMax;
 
     private String videoId;
     private String title;
@@ -58,16 +62,23 @@ public class RequestDownloadMusicStream extends AsyncTask<String, String, String
         super.onPreExecute();
 
         this.notificationId = ThreadLocalRandom.current().nextInt(2, NOTIFICATION_ID_MAX + 1);
+        this.notificationChannelName = "notification channel " + this.notificationId;
 
+        this.notificationChannel = new NotificationChannel(
+                this.notificationChannelName,
+                "Channel " + this.notificationId,
+                NotificationManager.IMPORTANCE_LOW
+        );
         this.notificationManager = NotificationManagerCompat.from(this.context);
+        this.notificationManager.createNotificationChannel(this.notificationChannel);
 
-        this.notificationBuilder = new NotificationCompat.Builder(this.context, App.CHANNEL_ID_2)
+        this.notificationBuilder = new NotificationCompat.Builder(this.context, this.notificationChannelName)
                 .setSmallIcon(R.drawable.ic_baseline_download_24)
                 .setContentTitle("Download")
                 .setContentText("Download in progress")
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setOngoing(true)
-                .setProgress(PROGRESS_MAX, 0, false);
+                .setProgress(100, 0, false);
 
         this.notificationManager.notify(this.notificationId, this.notificationBuilder.build());
     }
@@ -81,13 +92,12 @@ public class RequestDownloadMusicStream extends AsyncTask<String, String, String
         InputStream inputStream = null;
         URL url = null;
         int len1 = 0;
-        int progress = 0;
         try {
             url = new URL(params[0]);
             inputStream = url.openStream();
             URLConnection urlConnection = url.openConnection();
             urlConnection.connect();
-            int size = urlConnection.getContentLength();
+            this.progressMax = urlConnection.getContentLength();
 
             String fileName = params[1] + MainActivity.AUDIO_FORMAT;
             String storagePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)+"/YoutubeMusics";
@@ -98,12 +108,11 @@ public class RequestDownloadMusicStream extends AsyncTask<String, String, String
 
             FileOutputStream fileOutputStream = new FileOutputStream(f+"/"+fileName);
             byte[] buffer = new byte[1024];
-            int total = 0;
+            int progress = 0;
             if (inputStream != null) {
                 while ((len1 = inputStream.read(buffer)) != -1) {
-                    total += len1;
+                    progress += len1;
 
-                    progress = (int) (((double) total / size) * 100);
                     if(progress >= 0) {
                         publishProgress("" + progress);
                     }
@@ -134,16 +143,20 @@ public class RequestDownloadMusicStream extends AsyncTask<String, String, String
     protected void onProgressUpdate(String... values) {
         super.onProgressUpdate(values);
         int progress = Integer.parseInt(values[0]);
-        this.notificationBuilder.setProgress(PROGRESS_MAX, progress, false);
+        this.notificationBuilder.setProgress(this.progressMax, progress, false);
         this.notificationManager.notify(this.notificationId, this.notificationBuilder.build());
     }
 
     @Override
     protected void onPostExecute(String s) {
         super.onPostExecute(s);
-        this.notificationBuilder.setContentText("Download finished")
-                .setProgress(0, 0, false)
-                .setOngoing(false);
+        this.notificationManager.cancel(this.notificationId);
+
+        this.notificationBuilder = new NotificationCompat.Builder(this.context, this.notificationChannelName)
+                .setSmallIcon(R.drawable.ic_baseline_download_24)
+                .setContentTitle("Download")
+                .setContentText("Download finished")
+                .setPriority(NotificationCompat.PRIORITY_LOW);
 
         this.notificationManager.notify(this.notificationId, this.notificationBuilder.build());
 
