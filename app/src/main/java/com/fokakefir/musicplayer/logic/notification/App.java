@@ -9,7 +9,8 @@ public class App extends Application {
 
     // region 0. Constants
 
-    public static final String CHANNEL_ID = "notification_channel";
+    public static final String CHANNEL_ID_1 = "notification_channel1";
+    public static final String CHANNEL_ID_2 = "notification_channel2";
 
     // endregion
 
@@ -23,24 +24,32 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
 
-        createNotificationChannel();
+        createNotificationChannels();
     }
 
     // endregion
 
     // region 3. Notification
 
-    public void createNotificationChannel() {
+    public void createNotificationChannels() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(
-                    CHANNEL_ID,
-                    "Channel",
+            NotificationChannel channel1 = new NotificationChannel(
+                    CHANNEL_ID_1,
+                    "Channel 1",
                     NotificationManager.IMPORTANCE_LOW
             );
-            channel.setDescription("This is notification channel");
+            channel1.setDescription("This is notification channel 1");
+
+            NotificationChannel channel2 = new NotificationChannel(
+                    CHANNEL_ID_2,
+                    "Channel 2",
+                    NotificationManager.IMPORTANCE_LOW
+            );
+            channel2.setDescription("This is notification channel 2");
 
             NotificationManager manager = getSystemService(NotificationManager.class);
-            manager.createNotificationChannel(channel);
+            manager.createNotificationChannel(channel1);
+            manager.createNotificationChannel(channel2);
 
         }
     }

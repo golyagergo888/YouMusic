@@ -253,7 +253,7 @@ public class MusicPlayerService extends Service implements MusicPlayer.MusicPlay
 
         Bitmap artwork = BitmapFactory.decodeResource(getResources(), R.raw.ic_sound);
 
-        this.notificationBuilder = new NotificationCompat.Builder(this, App.CHANNEL_ID)
+        this.notificationBuilder = new NotificationCompat.Builder(this, App.CHANNEL_ID_1)
                 .setSmallIcon(R.drawable.ic_baseline_music_24)
                 .setContentTitle(musicTitle)
                 .setContentText(musicArtist)
