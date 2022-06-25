@@ -99,9 +99,9 @@ public class MusicPlayerService extends Service implements MusicPlayer.MusicPlay
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(this.receiver);
         deleteNotification();
+        super.onDestroy();
     }
 
     // endregion

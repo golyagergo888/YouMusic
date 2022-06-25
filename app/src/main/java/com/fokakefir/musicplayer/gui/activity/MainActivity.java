@@ -7,6 +7,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -14,6 +15,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.SparseArray;
@@ -88,6 +90,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     // endregion
 
     // region 1. Decl and Init
+
+    private Intent serviceIntent;
 
     private SQLiteDatabase database;
 
@@ -180,8 +184,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         this.seekBar.setOnSeekBarChangeListener(this);
         this.slidingSeekBar = false;
 
-        Intent intent = new Intent(MainActivity.this, MusicPlayerService.class);
-        startService(intent);
+        this.serviceIntent = new Intent(MainActivity.this, MusicPlayerService.class);
+        startForegroundService(this.serviceIntent);
 
         LocalBroadcastManager.getInstance(this).registerReceiver(this.receiver, new IntentFilter(INTENT_FILTER_SERVICE));
         this.isPlaying = false;
@@ -211,6 +215,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         if (this.visualizer != null) {
             this.visualizer.release();
         }
+        stopService(this.serviceIntent);
     }
 
     @Override
