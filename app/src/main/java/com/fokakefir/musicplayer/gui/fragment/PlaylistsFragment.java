@@ -17,11 +17,7 @@ import com.fokakefir.musicplayer.R;
 import com.fokakefir.musicplayer.gui.activity.MainActivity;
 import com.fokakefir.musicplayer.gui.dialog.PlaylistDialog;
 import com.fokakefir.musicplayer.gui.recyclerview.PlaylistAdapter;
-import com.fokakefir.musicplayer.model.Playlist;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 public class PlaylistsFragment extends Fragment implements PlaylistAdapter.OnPlaylistListener, View.OnClickListener, PlaylistDialog.OnPlaylistDialogListener {

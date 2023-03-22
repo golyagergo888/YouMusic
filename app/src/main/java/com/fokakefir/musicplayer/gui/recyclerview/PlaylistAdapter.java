@@ -3,7 +3,6 @@ package com.fokakefir.musicplayer.gui.recyclerview;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
-import android.graphics.ColorFilter;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -11,7 +10,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -21,8 +19,6 @@ import com.fokakefir.musicplayer.R;
 import com.fokakefir.musicplayer.gui.activity.MainActivity;
 import com.fokakefir.musicplayer.logic.database.MusicPlayerContract;
 import com.fokakefir.musicplayer.model.Playlist;
-
-import java.util.List;
 
 public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.PlaylistViewHolder> {
 

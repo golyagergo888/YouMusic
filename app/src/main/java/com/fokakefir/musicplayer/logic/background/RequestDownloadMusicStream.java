@@ -2,7 +2,6 @@ package com.fokakefir.musicplayer.logic.background;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.media.MediaMetadataRetriever;
 import android.os.AsyncTask;
@@ -13,7 +12,6 @@ import androidx.core.app.NotificationManagerCompat;
 
 import com.fokakefir.musicplayer.R;
 import com.fokakefir.musicplayer.gui.activity.MainActivity;
-import com.fokakefir.musicplayer.logic.notification.App;
 
 import java.io.File;
 import java.io.FileOutputStream;

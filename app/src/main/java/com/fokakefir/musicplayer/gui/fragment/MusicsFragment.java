@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,8 +18,6 @@ import com.fokakefir.musicplayer.R;
 import com.fokakefir.musicplayer.gui.activity.MainActivity;
 import com.fokakefir.musicplayer.gui.recyclerview.MusicAdapter;
 import com.fokakefir.musicplayer.model.Music;
-
-import java.util.List;
 
 public class MusicsFragment extends Fragment implements MusicAdapter.OnMusicListener {
 
